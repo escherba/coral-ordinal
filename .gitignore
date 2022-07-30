@@ -4,6 +4,8 @@
 .Ruserdata
 *.Rproj
 
+.envrc
+
 # Compiled python modules.
 *.pyc
 
