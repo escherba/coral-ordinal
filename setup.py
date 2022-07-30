@@ -7,7 +7,6 @@ version = {}
 with open(os.path.join(_here, 'coral_ordinal', 'version.py')) as f:
     exec(f.read(), version)
 
-
 with open(os.path.join(_here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
@@ -21,7 +20,7 @@ setuptools.setup(
     version=version['__version__'],
     long_description_content_type="text/markdown",
     license='MIT',
-    description='Tensorflow Keras implementation of CORAL ordinal regression output layer, loss, activation, and metrics',
+    description='Tensorflow Keras implementation of CORAL ordinal regression',
     long_description=long_description,
     python_requires='>=3.6',
 )
