@@ -44,9 +44,7 @@ def cumprobs_to_softmax(cumprobs: tf.Tensor) -> tf.Tensor:
     probs.append(cumprobs[:, num_classes - 2])
 
     # Combine as columns into a new tensor.
-    probs_tensor = tf.concat(tf.transpose(probs), axis=1)
-
-    return probs_tensor
+    return tf.concat(tf.transpose(probs), 1)
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
