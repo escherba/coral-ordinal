@@ -5,12 +5,13 @@ from typing import Any, Optional, Dict
 
 import tensorflow as tf
 from tensorflow.keras import backend as K
+from tensorflow.keras import metrics
 
 from . import activations
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
-class MeanAbsoluteErrorLabels(tf.keras.metrics.Metric):
+class MeanAbsoluteErrorLabels(metrics.Metric):
     """Computes mean absolute error for ordinal labels."""
 
     def __init__(

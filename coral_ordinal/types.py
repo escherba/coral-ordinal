@@ -4,6 +4,7 @@ Custom types module
 from typing import Tuple, List, Callable, Union, TypeVar, Any  # pylint: disable=unused-import
 
 import tensorflow as tf
+from tensorflow.keras import initializers, regularizers, constraints
 from keras.engine.keras_tensor import KerasTensor
 
 import numpy as np  # pylint: disable=unused-import
@@ -64,7 +65,7 @@ TensorLike = Union[
     KerasTensor,
 ]
 
-Initializer = Union[None, dict, str, tf.keras.initializers.Initializer]
-Regularizer = Union[None, dict, str, tf.keras.regularizers.Regularizer]
-Constraint = Union[None, dict, str, tf.keras.constraints.Constraint]
+Initializer = Union[None, dict, str, initializers.Initializer]
+Regularizer = Union[None, dict, str, regularizers.Regularizer]
+Constraint = Union[None, dict, str, constraints.Constraint]
 Activation = Union[None, str, Callable[[tf.Tensor], tf.Tensor]]

@@ -5,6 +5,7 @@ Ordinal loss functions
 from typing import Optional, Any, Dict
 
 import tensorflow as tf
+from tensorflow.keras import losses
 
 from .types import FloatArray
 
@@ -26,7 +27,7 @@ def _coral_ordinal_loss_no_reduction(
     """Compute ordinal loss without reduction."""
     levels = tf.cast(levels, dtype=logits.dtype)
     importance = tf.cast(importance, dtype=logits.dtype)
-    losses = -tf.reduce_sum(
+    return -tf.reduce_sum(
         (
             tf.math.log_sigmoid(logits) * levels
             + (tf.math.log_sigmoid(logits) - logits) * (1.0 - levels)
@@ -34,31 +35,30 @@ def _coral_ordinal_loss_no_reduction(
         * importance,
         axis=1,
     )
-    return losses
 
 
 def _reduce_losses(
-        losses: tf.Tensor,
-        reduction: tf.keras.losses.Reduction) -> tf.Tensor:
-    """Reduces losses to specified reduction."""
-    if reduction == tf.keras.losses.Reduction.NONE:
-        return losses
+        values: tf.Tensor,
+        reduction: losses.Reduction) -> tf.Tensor:
+    """Reduces loss values to specified reduction."""
+    if reduction == losses.Reduction.NONE:
+        return values
 
     if reduction in [
-        tf.keras.losses.Reduction.AUTO,
-        tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
+        losses.Reduction.AUTO,
+        losses.Reduction.SUM_OVER_BATCH_SIZE,
     ]:
-        return tf.reduce_mean(losses)
+        return tf.reduce_mean(values)
 
-    if reduction == tf.keras.losses.Reduction.SUM:
-        return tf.reduce_sum(losses)
+    if reduction == losses.Reduction.SUM:
+        return tf.reduce_sum(values)
 
-    raise Exception(f"{reduction} is not a valid reduction.")
+    raise Exception(f"'{reduction}' is not a valid reduction.")
 
 
 # The outer function is a constructor to create a loss function using a certain number of classes.
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
-class OrdinalCrossEntropy(tf.keras.losses.Loss):
+class OrdinalCrossEntropy(losses.Loss):
     """Computes ordinal cross entropy based on ordinal predictions and outcomes."""
 
     def __init__(
@@ -111,7 +111,7 @@ class OrdinalCrossEntropy(tf.keras.losses.Loss):
             importance_weights = tf.cast(self.importance_weights, dtype=tf.float32)
 
         if self.from_type == "ordinal_logits":
-            losses = _coral_ordinal_loss_no_reduction(
+            loss_values = _coral_ordinal_loss_no_reduction(
                 y_pred, tf_levels, importance_weights
             )
         elif self.from_type == "probs":
@@ -126,10 +126,10 @@ class OrdinalCrossEntropy(tf.keras.losses.Loss):
             )
 
         if sample_weight is not None:
-            sample_weight = tf.cast(sample_weight, losses.dtype)
-            losses = tf.multiply(losses, sample_weight)
+            sample_weight = tf.cast(sample_weight, loss_values.dtype)
+            loss_values = tf.multiply(loss_values, sample_weight)
 
-        return _reduce_losses(losses, self.reduction)
+        return _reduce_losses(loss_values, self.reduction)
 
     def get_config(self) -> Dict[str, Any]:
         """Return configuration for serializing"""
@@ -143,7 +143,7 @@ class OrdinalCrossEntropy(tf.keras.losses.Loss):
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
-class CornOrdinalCrossEntropy(tf.keras.losses.Loss):
+class CornOrdinalCrossEntropy(losses.Loss):
     """Implements CORN ordinal loss function for logits.
 
     Computes the CORN loss described in https://arxiv.org/abs/2111.08851
@@ -185,7 +185,7 @@ class CornOrdinalCrossEntropy(tf.keras.losses.Loss):
             label_gt_i = y_true > i
             sets.append((set_mask, label_gt_i))
 
-        losses = tf.zeros_like(y_true)
+        loss_values = tf.zeros_like(y_true)
         for task_index, (set_mask, label_gt_i) in enumerate(sets):
 
             pred_task = tf.gather(y_pred, task_index, axis=1)
@@ -198,11 +198,11 @@ class CornOrdinalCrossEntropy(tf.keras.losses.Loss):
                 ),
                 0.0,  # don't add to loss if label is <= i - 1
             )
-            losses += -losses_task
-        losses /= self.num_classes
+            loss_values += -losses_task
+        loss_values /= self.num_classes
 
         if sample_weight is not None:
-            sample_weight = tf.cast(sample_weight, losses.dtype)
-            losses = tf.multiply(losses, sample_weight)
+            sample_weight = tf.cast(sample_weight, loss_values.dtype)
+            loss_values = tf.multiply(loss_values, sample_weight)
 
-        return _reduce_losses(losses, self.reduction)
+        return _reduce_losses(loss_values, self.reduction)

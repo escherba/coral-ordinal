@@ -1,9 +1,10 @@
 """Module for testing loss."""
 from typing import Tuple
 
-import tensorflow as tf
-import numpy as np
 import pytest
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras import models, layers
 
 from coral_ordinal import loss, layer
 from coral_ordinal.types import IntArray, FloatArray
@@ -110,8 +111,8 @@ def test_sample_weight_in_fit() -> None:
     """sample weights work during `fit()`"""
     X, y, _ = _create_test_data()
     weight = np.zeros_like(y)
-    model = tf.keras.models.Sequential()
-    model.add(tf.keras.layers.Dense(5, input_dim=X.shape[1]))
+    model = models.Sequential()
+    model.add(layers.Dense(5, input_dim=X.shape[1]))
     model.add(layer.CornOrdinal(num_classes=len(np.unique(y))))
     model.compile(loss=loss.CornOrdinalCrossEntropy())
 
@@ -122,8 +123,8 @@ def test_sample_weight_in_fit() -> None:
 def test_class_weight_in_fit() -> None:
     """class weights work during `fit()`"""
     X, y, _ = _create_test_data()
-    model = tf.keras.models.Sequential()
-    model.add(tf.keras.layers.Dense(5, input_dim=X.shape[1]))
+    model = models.Sequential()
+    model.add(layers.Dense(5, input_dim=X.shape[1]))
     model.add(layer.CornOrdinal(num_classes=len(np.unique(y))))
     model.compile(loss=loss.CornOrdinalCrossEntropy())
 

@@ -6,13 +6,13 @@ Coral-ordinal layers
 from typing import Optional, Any, Dict
 import warnings
 import tensorflow as tf
-from tensorflow.keras import regularizers
+from tensorflow.keras import regularizers, activations, layers
 
 from .types import Regularizer, Activation
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
-class CoralOrdinal(tf.keras.layers.Layer):
+class CoralOrdinal(layers.Layer):
     """Implements the CORAL ordinal layer for ordinal regression."""
 
     # We skip input_dim/input_shape here and put in the build() method as
@@ -45,7 +45,7 @@ class CoralOrdinal(tf.keras.layers.Layer):
         # Pass any additional keyword arguments to Layer() (i.e. name, dtype)
         super().__init__(**kwargs)
         self.num_classes = num_classes
-        self.activation = tf.keras.activations.get(activation)
+        self.activation = activations.get(activation)
         self.kernel_regularizer = regularizers.get(kernel_regularizer)
         self.bias_regularizer = regularizers.get(bias_regularizer)
 
@@ -111,7 +111,7 @@ class CoralOrdinal(tf.keras.layers.Layer):
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
-class CornOrdinal(tf.keras.layers.Dense):
+class CornOrdinal(layers.Dense):
     """Implements the CORN layer for ordinal regression."""
 
     # We skip input_dim/input_shape here and put in the build() method as
