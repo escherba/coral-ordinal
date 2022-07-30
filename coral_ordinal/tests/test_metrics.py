@@ -42,6 +42,7 @@ def get_data() -> Tuple[List[List[Union[int, List[int]]]], List[List[List[float]
 
 
 def test_mae_labels_score() -> None:
+    """MAE labels score correctness"""
     actuals, preds = get_data()
 
     mael_obj1 = metrics.MeanAbsoluteErrorLabels()
@@ -67,6 +68,7 @@ def test_mae_labels_score() -> None:
 
 
 def test_mae_labels_running_score() -> None:
+    """MAE labels running score correctness"""
     mael_obj = metrics.MeanAbsoluteErrorLabels()
     actuals, preds = get_data()
     for actual, pred in zip(actuals, preds):
