@@ -14,12 +14,11 @@ class MeanAbsoluteErrorLabels(tf.keras.metrics.Metric):
     """Computes mean absolute error for ordinal labels."""
 
     def __init__(
-        self,
-        corn_logits: bool = False,
-        threshold: float = 0.5,
-        name: str = "mean_absolute_error_labels",
-        **kwargs: Any
-    ) -> None:
+            self,
+            corn_logits: bool = False,
+            threshold: float = 0.5,
+            name: str = "mean_absolute_error_labels",
+            **kwargs: Any) -> None:
         """Create the state variables
 
         Creates a `MeanAbsoluteErrorLabels` instance.

@@ -19,13 +19,12 @@ class CoralOrdinal(tf.keras.layers.Layer):
     # recommended in the tutorial, in case the user doesn't know the input
     # dimensions when defining the model.
     def __init__(
-        self,
-        num_classes: int,
-        activation: Optional[str] = None,
-        kernel_regularizer: Regularizer = None,
-        bias_regularizer: Regularizer = None,
-        **kwargs: Any,
-    ) -> None:
+            self,
+            num_classes: int,
+            activation: Optional[str] = None,
+            kernel_regularizer: Regularizer = None,
+            bias_regularizer: Regularizer = None,
+            **kwargs: Any) -> None:
         """Ordinal output layer, which produces ordinal logits by default.
 
         Args:
