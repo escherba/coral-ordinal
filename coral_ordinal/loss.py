@@ -1,12 +1,17 @@
-from typing import Optional
+"""
+Ordinal loss functions
+"""
+# pylint: disable=too-few-public-methods
+from typing import Optional, Any, Dict
 
-import warnings
-import functools
 import tensorflow as tf
-import numpy as np
+
+from .types import FloatArray
 
 
-def _label_to_levels(labels: tf.Tensor, num_classes: int) -> tf.Tensor:
+def _label_to_levels(
+        labels: tf.Tensor,
+        num_classes: int) -> tf.Tensor:
     # Original code that we are trying to replicate:
     # levels = [1] * label + [0] * (self.num_classes - 1 - label)
     # This function uses tf.sequence_mask(), which is vectorized. Avoids map_fn()
@@ -15,8 +20,9 @@ def _label_to_levels(labels: tf.Tensor, num_classes: int) -> tf.Tensor:
 
 
 def _coral_ordinal_loss_no_reduction(
-    logits: tf.Tensor, levels: tf.Tensor, importance: tf.Tensor
-) -> tf.Tensor:
+        logits: tf.Tensor,
+        levels: tf.Tensor,
+        importance: tf.Tensor) -> tf.Tensor:
     """Compute ordinal loss without reduction."""
     levels = tf.cast(levels, dtype=logits.dtype)
     importance = tf.cast(importance, dtype=logits.dtype)
@@ -32,20 +38,22 @@ def _coral_ordinal_loss_no_reduction(
 
 
 def _reduce_losses(
-    losses: tf.Tensor, reduction: tf.keras.losses.Reduction
-) -> tf.Tensor:
+        losses: tf.Tensor,
+        reduction: tf.keras.losses.Reduction) -> tf.Tensor:
     """Reduces losses to specified reduction."""
     if reduction == tf.keras.losses.Reduction.NONE:
         return losses
-    elif reduction in [
+
+    if reduction in [
         tf.keras.losses.Reduction.AUTO,
         tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
     ]:
         return tf.reduce_mean(losses)
-    elif reduction == tf.keras.losses.Reduction.SUM:
+
+    if reduction == tf.keras.losses.Reduction.SUM:
         return tf.reduce_sum(losses)
-    else:
-        raise Exception(f"{reduction} is not a valid reduction.")
+
+    raise Exception(f"{reduction} is not a valid reduction.")
 
 
 # The outer function is a constructor to create a loss function using a certain number of classes.
@@ -54,13 +62,12 @@ class OrdinalCrossEntropy(tf.keras.losses.Loss):
     """Computes ordinal cross entropy based on ordinal predictions and outcomes."""
 
     def __init__(
-        self,
-        num_classes: Optional[int] = None,
-        importance_weights: Optional[np.ndarray] = None,
-        from_type: str = "ordinal_logits",
-        name: str = "ordinal_crossentropy",
-        **kwargs,
-    ):
+            self,
+            num_classes: Optional[int] = None,
+            importance_weights: Optional[FloatArray] = None,
+            from_type: str = "ordinal_logits",
+            name: str = "ordinal_crossentropy",
+            **kwargs: Any) -> None:
         """Cross-entropy loss designed for ordinal outcomes.
 
         Args:
@@ -83,11 +90,11 @@ class OrdinalCrossEntropy(tf.keras.losses.Loss):
 
     # Following https://www.tensorflow.org/api_docs/python/tf/keras/losses/Loss
     def call(
-        self,
-        y_true: tf.Tensor,
-        y_pred: tf.Tensor,
-        sample_weight: Optional[tf.Tensor] = None,
-    ):
+            self,
+            y_true: tf.Tensor,
+            y_pred: tf.Tensor,
+            sample_weight: Optional[tf.Tensor] = None) -> tf.Tensor:
+        """Forward pass"""
 
         # Ensure that y_true is the same type as y_pred (presumably a float).
         y_pred = tf.convert_to_tensor(y_pred)
@@ -124,7 +131,8 @@ class OrdinalCrossEntropy(tf.keras.losses.Loss):
 
         return _reduce_losses(losses, self.reduction)
 
-    def get_config(self):
+    def get_config(self) -> Dict[str, Any]:
+        """Return configuration for serializing"""
         config = {
             "num_classes": self.num_classes,
             "importance_weights": self.importance_weights,
@@ -136,23 +144,26 @@ class OrdinalCrossEntropy(tf.keras.losses.Loss):
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
 class CornOrdinalCrossEntropy(tf.keras.losses.Loss):
-    """Implements CORN ordinal loss function for logits."""
+    """Implements CORN ordinal loss function for logits.
+
+    Computes the CORN loss described in https://arxiv.org/abs/2111.08851
+    """
+
+    num_classes: Optional[int]
 
     def __init__(
-        self,
-        **kwargs,
-    ):
+            self,
+            **kwargs: Any) -> None:
         """Initializes class."""
         super().__init__(**kwargs)
         self.num_classes = None
 
     def __call__(
-        self,
-        y_true: tf.Tensor,
-        y_pred: tf.Tensor,
-        sample_weight: Optional[tf.Tensor] = None,
-    ):
-        """Computes the CORN loss described in https://arxiv.org/abs/2111.08851
+            self,
+            y_true: tf.Tensor,
+            y_pred: tf.Tensor,
+            sample_weight: Optional[tf.Tensor] = None) -> tf.Tensor:
+        """Forward pass
 
         Args:
           y_true: true labels (0..N-1)
@@ -175,8 +186,7 @@ class CornOrdinalCrossEntropy(tf.keras.losses.Loss):
             sets.append((set_mask, label_gt_i))
 
         losses = tf.zeros_like(y_true)
-        for task_index, s in enumerate(sets):
-            set_mask, label_gt_i = s
+        for task_index, (set_mask, label_gt_i) in enumerate(sets):
 
             pred_task = tf.gather(y_pred, task_index, axis=1)
             losses_task = tf.where(

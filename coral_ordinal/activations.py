@@ -13,10 +13,10 @@ def coral_cumprobs(logits: tf.Tensor) -> tf.Tensor:
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
-def corn_cumprobs(logits: tf.Tensor, axis=-1) -> tf.Tensor:
+def corn_cumprobs(logits: tf.Tensor, axis: int = 1) -> tf.Tensor:
     """Turns logits from CORN layer into cumulative probabilities."""
     probs = tf.math.sigmoid(logits)
-    return tf.math.cumprod(probs, axis=1)
+    return tf.math.cumprod(probs, axis=axis)
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
@@ -77,7 +77,7 @@ def cumprobs_to_label(cumprobs: tf.Tensor, threshold: float = 0.5) -> tf.Tensor:
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
-def ordinal_softmax(x, axis=-1):
+def ordinal_softmax(x: tf.Tensor, axis: int = -1) -> tf.Tensor:
     """Convert the ordinal logit output of CoralOrdinal() to label probabilities.
 
     Args:

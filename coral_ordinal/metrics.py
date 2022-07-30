@@ -1,3 +1,8 @@
+"""
+Coral-ordinal metrics
+"""
+from typing import Any, Optional, Dict
+
 import tensorflow as tf
 from tensorflow.keras import backend as K
 
@@ -12,10 +17,12 @@ class MeanAbsoluteErrorLabels(tf.keras.metrics.Metric):
         self,
         corn_logits: bool = False,
         threshold: float = 0.5,
-        name="mean_absolute_error_labels",
-        **kwargs
-    ):
-        """Creates a `MeanAbsoluteErrorLabels` instance.
+        name: str = "mean_absolute_error_labels",
+        **kwargs: Any
+    ) -> None:
+        """Create the state variables
+
+        Creates a `MeanAbsoluteErrorLabels` instance.
 
         Args:
           corn_logits: if True, inteprets y_pred as CORN logits; otherwise (default)
@@ -31,8 +38,14 @@ class MeanAbsoluteErrorLabels(tf.keras.metrics.Metric):
         self.maes = self.add_weight(name="maes", initializer="zeros")
         self.count = self.add_weight(name="count", initializer="zeros")
 
-    def update_state(self, y_true, y_pred, sample_weight=None):
-        """Computes mean absolute error for ordinal labels.
+    def update_state(
+            self,
+            y_true: tf.Tensor,
+            y_pred: tf.Tensor,
+            sample_weight: Optional[tf.Tensor] = None) -> None:
+        """Update the state variables given y_true and y_pred
+
+        Computes mean absolute error for ordinal labels.
 
         Args:
           y_true: Labels (int).
@@ -66,16 +79,20 @@ class MeanAbsoluteErrorLabels(tf.keras.metrics.Metric):
         self.maes.assign_add(tf.reduce_mean(label_abs_err))
         self.count.assign_add(tf.constant(1.0))
 
-    def result(self):
+    def result(self) -> tf.Tensor:
+        """Return the scalar metric result"""
         return tf.math.divide_no_nan(self.maes, self.count)
 
-    def reset_state(self):
-        """Resets all of the metric state variables at the start of each epoch."""
+    def reset_state(self) -> None:
+        """Clear the state at the start of each epoch."""
         K.batch_set_value([(v, 0) for v in self.variables])
 
-    def get_config(self):
+    def get_config(self) -> Dict[str, Any]:
         """Returns the serializable config of the metric."""
-        config = {"threshold": self._threshold, "corn_logits": self._corn_logits}
+        config = {
+            "threshold": self._threshold,
+            "corn_logits": self._corn_logits
+        }
         base_config = super().get_config()
         return {**base_config, **config}
 
