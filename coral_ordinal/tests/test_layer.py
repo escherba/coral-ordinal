@@ -1,14 +1,23 @@
+"""
+Layer unit tests
+"""
+from typing import Tuple
+
 import tempfile
-import tensorflow as tf
-import numpy as np
 import pytest
 
+import numpy as np
+import tensorflow as tf
+
 from coral_ordinal import layer
+from coral_ordinal.types import IntArray, FloatArray
 
 
-def _create_test_data():
-    # Test data from example in
-    # https://github.com/Raschka-research-group/coral-pytorch/blob/main/coral_pytorch/losses.py
+def _create_test_data() -> Tuple[FloatArray, IntArray]:
+    """Fixture that provides data
+    Test data from example in
+    https://github.com/Raschka-research-group/coral-pytorch/blob/main/coral_pytorch/losses.py
+    """
     np.random.seed(10)
 
     X = np.random.normal(size=(8, 99))
@@ -16,12 +25,11 @@ def _create_test_data():
     return X, y
 
 
-def test_corn_layer():
+def test_corn_layer() -> None:
+    """Creation from config works"""
     corn_layer = layer.CornOrdinal(num_classes=4, kernel_initializer="uniform")
     corn_layer_config = corn_layer.get_config()
-
     corn_layer2 = layer.CornOrdinal(**corn_layer_config)
-
     assert isinstance(corn_layer2, layer.CornOrdinal)
 
 
@@ -29,7 +37,8 @@ def test_corn_layer():
     "constructor",
     [(layer.CornOrdinal), (layer.CoralOrdinal)],
 )
-def test_serializing_layers(constructor):
+def test_serializing_layers(constructor: layer.CornOrdinal) -> None:
+    """Layer serialization works"""
     X, _ = _create_test_data()
     model = tf.keras.models.Sequential()
     model.add(tf.keras.layers.Dense(5, input_dim=X.shape[1]))

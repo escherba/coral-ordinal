@@ -5,7 +5,8 @@ import numpy as np
 from coral_ordinal import activations
 
 
-def test_ordinal_probs_to_label():
+def test_ordinal_probs_to_label() -> None:
+    """Conversion from ordinal probability to label"""
     probas = np.array(
         [
             [0.934, 0.861, 0.323, 0.492, 0.295],
