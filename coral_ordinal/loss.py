@@ -158,7 +158,7 @@ class CornOrdinalCrossEntropy(losses.Loss):
         super().__init__(**kwargs)
         self.num_classes = None
 
-    def __call__(
+    def call(
             self,
             y_true: tf.Tensor,
             y_pred: tf.Tensor,
