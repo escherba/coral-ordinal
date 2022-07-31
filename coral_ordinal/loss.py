@@ -10,13 +10,18 @@ from tensorflow.keras import losses
 from .types import FloatArray
 
 
-def _label_to_levels(
+def encode_ordinal_labels(
         labels: tf.Tensor,
         num_classes: int) -> tf.Tensor:
-    # Original code that we are trying to replicate:
-    # levels = [1] * label + [0] * (self.num_classes - 1 - label)
-    # This function uses tf.sequence_mask(), which is vectorized. Avoids map_fn()
-    # call.
+    """Converts ordinal label to one-hot representation
+
+    Calling this is equivalent to:
+
+        levels = [1] * label + [0] * (num_classes - 1 - label)
+
+    """
+    # This function uses tf.sequence_mask(), which is vectorized, and avoids
+    # map_fn() call.
     return tf.sequence_mask(labels, maxlen=num_classes - 1, dtype=tf.float32)
 
 
@@ -31,8 +36,7 @@ def _coral_ordinal_loss_no_reduction(
         (
             tf.math.log_sigmoid(logits) * levels
             + (tf.math.log_sigmoid(logits) - logits) * (1.0 - levels)
-        )
-        * importance,
+        ) * importance,
         axis=1,
     )
 
@@ -103,7 +107,7 @@ class OrdinalCrossEntropy(losses.Loss):
             self.num_classes = int(y_pred.get_shape().as_list()[1]) + 1
 
         # Convert each true label to a vector of ordinal level indicators.
-        tf_levels = _label_to_levels(tf.squeeze(y_true), self.num_classes)
+        tf_levels = encode_ordinal_labels(tf.squeeze(y_true), self.num_classes)
 
         if self.importance_weights is None:
             importance_weights = tf.ones(self.num_classes - 1, dtype=tf.float32)
