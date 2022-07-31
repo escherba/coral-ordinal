@@ -75,7 +75,7 @@ def _reduce_losses(
     if reduction == losses.Reduction.SUM:
         return tf.reduce_sum(values)
 
-    raise Exception(f"'{reduction}' is not a valid reduction.")
+    raise ValueError(f"'{reduction}' is not a valid reduction.")
 
 
 # The outer function is a constructor to create a loss function using a certain number of classes.
@@ -118,34 +118,34 @@ class OrdinalCrossEntropy(losses.Loss):
             sample_weight: Optional[tf.Tensor] = None) -> tf.Tensor:
         """Forward pass"""
 
+        from_type = self.from_type
+        importance_weights = self.importance_weights
         y_pred = tf.convert_to_tensor(y_pred)
-        if self.num_classes is None:
-            self.num_classes = int(y_pred.get_shape().as_list()[1]) + 1
+        num_classes = self.num_classes
+
+        if num_classes is None:
+            num_classes = int(y_pred.get_shape().as_list()[1]) + 1
 
         # Convert each true label to a vector of ordinal level indicators.
         # This also ensures that tf_levels is the same type as y_pred (presumably a float).
         tf_levels = encode_ordinal_labels(
-            tf.squeeze(y_true), self.num_classes, dtype=y_pred.dtype)
+            tf.squeeze(y_true), num_classes, dtype=y_pred.dtype)
 
-        if self.importance_weights is None:
-            importance_weights = tf.ones(self.num_classes - 1, dtype=tf.float32)
+        if importance_weights is None:
+            importance_weights = tf.ones(num_classes - 1, dtype=tf.float32)
         else:
-            importance_weights = tf.cast(self.importance_weights, dtype=tf.float32)
+            importance_weights = tf.cast(importance_weights, dtype=tf.float32)
 
-        if self.from_type == "ordinal_logits":
+        if from_type == "ordinal_logits":
             loss_values = _coral_ordinal_loss_no_reduction(
                 y_pred, tf_levels, importance_weights
             )
-        elif self.from_type == "probs":
+        elif from_type == "probs":
             raise NotImplementedError("not yet implemented")
-        elif self.from_type == "logits":
+        elif from_type == "logits":
             raise NotImplementedError("not yet implemented")
         else:
-            raise Exception(
-                "Unknown from_type value "
-                + self.from_type
-                + " in OrdinalCrossEntropy()"
-            )
+            raise ValueError(f"Unknown from_type value {from_type}")
 
         if sample_weight is not None:
             sample_weight = tf.cast(sample_weight, loss_values.dtype)
