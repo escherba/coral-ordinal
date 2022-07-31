@@ -7,7 +7,7 @@ from .layer import CoralOrdinal, CornOrdinal
 from .loss import OrdinalCrossEntropy, CornOrdinalCrossEntropy
 from .metrics import MeanAbsoluteErrorLabels
 from .activations import (
-    ordinal_softmax,
+    coral_ordinal_softmax,
     corn_ordinal_softmax,
     cumprobs_to_label,
     corn_cumprobs,
@@ -22,7 +22,7 @@ __all__ = [
     "MeanAbsoluteErrorLabels",
     "OrdinalCrossEntropy",
     "CornOrdinalCrossEntropy",
-    "ordinal_softmax",
+    "coral_ordinal_softmax",
     "corn_ordinal_softmax",
     "cumprobs_to_label",
     "coral_cumprobs",

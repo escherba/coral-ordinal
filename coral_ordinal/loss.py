@@ -28,10 +28,11 @@ def encode_ordinal_labels(
 
     Example:
 
-        >>> labels = [0, 1, 2]
-        >>> out = encode_ordinal_labels(labels, num_classes=3, dtype=tf.int32)
-        >>> out.numpy().tolist()
-        [[0, 0], [1, 0], [1, 1]]
+        >>> encode_ordinal_labels([0, 1, 2], num_classes=3)
+        <tf.Tensor: shape=(3, 2), dtype=float32, numpy=
+        array([[0., 0.],
+               [1., 0.],
+               [1., 1.]], dtype=float32)>
 
     Calling this is equivalent to:
 

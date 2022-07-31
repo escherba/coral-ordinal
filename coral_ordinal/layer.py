@@ -30,8 +30,8 @@ class CoralOrdinal(layers.Layer):
         Args:
           num_classes: how many ranks (aka labels or values) are in the ordinal variable.
           activation: (Optional) Activation function to use. The default of None produces
-            ordinal logits, but passing "ordinal_softmax" will cause the layer to output
-            a probability prediction for each label.
+            ordinal logits, but passing ordinal softmax activation will make the layer
+            output a probability prediction for each label.
           kernel_regularizer: regularizer for kernel of Coral Dense layer.
           bias_regularizer: regularizer for bias of Coral Dense layer.
           **kwargs: keyword arguments passed to Layer().
@@ -118,8 +118,8 @@ class CornOrdinal(layers.Dense):
         Args:
           num_classes: how many ranks (aka labels or values) are in the ordinal variable.
           activation: (Optional) Activation function to use. The default of None produces
-            ordinal logits, but passing "ordinal_softmax" will cause the layer to output
-            a probability prediction for each label.
+            ordinal logits, but passing ordinal softmax activation will make the layer
+            output a probability prediction for each label.
         """
         if activation is not None:
             raise NotImplementedError(
