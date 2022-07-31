@@ -75,12 +75,11 @@ def cumprobs_to_label(cumprobs: tf.Tensor, threshold: float = 0.5) -> tf.Tensor:
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
-def ordinal_softmax(x: tf.Tensor, axis: int = -1) -> tf.Tensor:
+def ordinal_softmax(x: tf.Tensor) -> tf.Tensor:
     """Convert the ordinal logit output of CoralOrdinal() to label probabilities.
 
     Args:
       x: Logit output of the CoralOrdinal() layer.
-      axis: Not yet supported.
     """
     # Convert the ordinal logits into cumulative probabilities.
     cum_probs = coral_cumprobs(x)
