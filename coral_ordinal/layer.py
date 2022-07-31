@@ -90,12 +90,10 @@ class CoralOrdinal(layers.Layer):
         logits = kernelized_inputs + self.bias
 
         if self.activation is None:
-            outputs = logits
-        else:
-            # Not yet tested:
-            outputs = self.activation(logits)
+            return logits
 
-        return outputs
+        # Not yet tested:
+        return self.activation(logits)
 
     # This allows for serialization.
     # https://www.tensorflow.org/guide/keras/custom_layers_and_models#you_can_optionally_enable_serialization_on_your_layers

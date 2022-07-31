@@ -70,8 +70,7 @@ def cumprobs_to_label(cumprobs: tf.Tensor, threshold: float = 0.5) -> tf.Tensor:
     """
     assert 0 < threshold < 1, f"threshold must be in (0, 1). Got {threshold}."
     predict_levels = tf.cast(cumprobs > threshold, dtype=tf.int32)
-    predicted_labels = tf.reduce_sum(predict_levels, axis=1)
-    return predicted_labels
+    return tf.reduce_sum(predict_levels, axis=1)
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
