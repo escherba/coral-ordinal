@@ -4,7 +4,7 @@ from typing import Tuple, List, Union
 import numpy as np
 import tensorflow as tf
 
-from .. import metrics
+from coral_ordinal import metrics
 
 
 def test_config() -> None:
