@@ -14,7 +14,7 @@ try:
 except ImportError:
     from keras.testing_utils import layer_test
 
-from coral_ordinal import layer
+from coral_ordinal.layer import CoralOrdinal, CornOrdinal
 from coral_ordinal.types import IntArray, FloatArray
 
 
@@ -30,7 +30,7 @@ def _create_test_data() -> Tuple[FloatArray, IntArray]:
 
 
 @pytest.mark.parametrize(
-    "klass", [(layer.CornOrdinal), (layer.CoralOrdinal)],
+    "klass", [(CornOrdinal), (CoralOrdinal)],
 )
 def test_corn_layer_builtin(klass: layers.Layer) -> None:
     """Class passes `layer_test`"""
@@ -43,14 +43,14 @@ def test_corn_layer_builtin(klass: layers.Layer) -> None:
 
 def test_corn_layer() -> None:
     """Creation from config works"""
-    corn_layer = layer.CornOrdinal(num_classes=4, kernel_initializer="uniform")
+    corn_layer = CornOrdinal(num_classes=4, kernel_initializer="uniform")
     corn_layer_config = corn_layer.get_config()
-    corn_layer2 = layer.CornOrdinal(**corn_layer_config)
-    assert isinstance(corn_layer2, layer.CornOrdinal)
+    corn_layer2 = CornOrdinal(**corn_layer_config)
+    assert isinstance(corn_layer2, CornOrdinal)
 
 
 @pytest.mark.parametrize(
-    "klass", [(layer.CornOrdinal), (layer.CoralOrdinal)],
+    "klass", [(CornOrdinal), (CoralOrdinal)],
 )
 def test_serializing_layers(klass: layers.Layer) -> None:
     """Layer serialization works"""

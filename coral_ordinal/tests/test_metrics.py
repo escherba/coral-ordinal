@@ -4,12 +4,12 @@ from typing import Tuple, List, Union
 import numpy as np
 import tensorflow as tf
 
-from coral_ordinal import metrics
+from coral_ordinal.metrics import MeanAbsoluteErrorLabels
 
 
 def test_config() -> None:
     """basic configuration test"""
-    mael_obj = metrics.MeanAbsoluteErrorLabels()
+    mael_obj = MeanAbsoluteErrorLabels()
     assert mael_obj.name == "mean_absolute_error_labels"
     assert mael_obj.dtype == tf.float32
 
@@ -45,21 +45,21 @@ def test_mae_labels_score() -> None:
     """MAE labels score correctness"""
     actuals, preds = get_data()
 
-    mael_obj1 = metrics.MeanAbsoluteErrorLabels()
+    mael_obj1 = MeanAbsoluteErrorLabels()
     mael_obj1.update_state(
         tf.constant(actuals[0], dtype=tf.int32), tf.constant(preds[0], dtype=tf.float32)
     )
     # [7, 2, 1] - [7, 2, 1] = 0
     np.testing.assert_allclose(0.0, mael_obj1.result())
 
-    mael_obj2 = metrics.MeanAbsoluteErrorLabels()
+    mael_obj2 = MeanAbsoluteErrorLabels()
     mael_obj2.update_state(
         tf.constant(actuals[1], dtype=tf.int32), tf.constant(preds[1], dtype=tf.float32)
     )
     # [7, 2, 1] - [0, 0, 0] = (7 + 2 + 1) / 3 = 3.3333333333
     np.testing.assert_allclose(3.3333333333, mael_obj2.result())
 
-    mael_obj3 = metrics.MeanAbsoluteErrorLabels()
+    mael_obj3 = MeanAbsoluteErrorLabels()
     mael_obj3.update_state(
         tf.constant(actuals[2], dtype=tf.int32), tf.constant(preds[2], dtype=tf.float32)
     )
@@ -69,7 +69,7 @@ def test_mae_labels_score() -> None:
 
 def test_mae_labels_running_score() -> None:
     """MAE labels running score correctness"""
-    mael_obj = metrics.MeanAbsoluteErrorLabels()
+    mael_obj = MeanAbsoluteErrorLabels()
     actuals, preds = get_data()
     for actual, pred in zip(actuals, preds):
         mael_obj.update_state(
