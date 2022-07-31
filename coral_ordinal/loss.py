@@ -6,7 +6,7 @@ from typing import Optional, Any, Dict
 
 import tensorflow as tf
 from tensorflow.keras import losses
-from tensorflow.python.framework.dtypes import DType
+from tensorflow.python.framework import dtypes
 
 
 from .types import FloatArray
@@ -15,13 +15,13 @@ from .types import FloatArray
 def encode_ordinal_labels(
         labels: tf.Tensor,
         num_classes: int,
-        dtype: DType = tf.float32) -> tf.Tensor:
-    """Converts ordinal label to one-hot representation
+        dtype: dtypes.DType = tf.float32) -> tf.Tensor:
+    """Convert ordinal label to one-hot representation
 
     Args:
         labels (tf.Tensor): a tensor of ordinal labels (starting with zero)
         num_classes (int): assumed number of classes
-        dtype (DType): result data type
+        dtype (dtypes.DType): result data type
 
     Returns:
         tf.Tensor: a tensor of levels (one-hot-encoded labels)
