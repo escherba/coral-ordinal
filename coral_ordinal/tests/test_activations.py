@@ -35,7 +35,7 @@ def test_corn_ordinal_softmax() -> None:
     result = activations.corn_ordinal_softmax(
         tf.constant([[-1, 1], [-2, 2]], dtype=tf.float32))
     expected = np.array(
-        [[0.7310586 , 0.07232951, 0.19661193],
-         [0.8807971 , 0.01420934, 0.10499357]],
+        [[ 0.7310586 , 0.07232951, 0.19661193],
+         [ 0.8807971 , 0.01420934, 0.10499357]],
         dtype=np.float32)
     assert_allclose(result, expected, atol=1e-6)
