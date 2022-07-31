@@ -125,15 +125,15 @@ class CornOrdinal(layers.Dense):
             ordinal logits, but passing "ordinal_softmax" will cause the layer to output
             a probability prediction for each label.
         """
+        if activation is not None:
+            raise NotImplementedError(
+                f"CornOrdinal() must return logits. Got {activation}."
+            )
         if "units" in kwargs:
             warnings.warn("Use 'num_classes' instead of 'units'. Dropping ...")
             kwargs.pop("units")
 
         super().__init__(units=num_classes - 1, activation=activation, **kwargs)
-        if activation is not None:
-            raise NotImplementedError(
-                f"CornOrdinal() must return logits. Got {activation}."
-            )
         self.num_classes = num_classes
         self.activation = activation
 
