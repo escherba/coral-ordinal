@@ -84,10 +84,7 @@ class CoralOrdinal(layers.Layer):
 
     def call(self, inputs: tf.Tensor) -> tf.Tensor:
         """Layer forward pass"""
-
-        kernelized_inputs = tf.matmul(inputs, self.kernel)
-
-        logits = kernelized_inputs + self.bias
+        logits = tf.matmul(inputs, self.kernel) + self.bias
 
         if self.activation is None:
             return logits
