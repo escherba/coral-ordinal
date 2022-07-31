@@ -118,14 +118,14 @@ class OrdinalCrossEntropy(losses.Loss):
             sample_weight: Optional[tf.Tensor] = None) -> tf.Tensor:
         """Forward pass"""
 
-        # Ensure that y_true is the same type as y_pred (presumably a float).
         y_pred = tf.convert_to_tensor(y_pred)
-        y_true = tf.cast(y_true, y_pred.dtype)
         if self.num_classes is None:
             self.num_classes = int(y_pred.get_shape().as_list()[1]) + 1
 
         # Convert each true label to a vector of ordinal level indicators.
-        tf_levels = encode_ordinal_labels(tf.squeeze(y_true), self.num_classes)
+        # This also ensures that tf_levels is the same type as y_pred (presumably a float).
+        tf_levels = encode_ordinal_labels(
+            tf.squeeze(y_true), self.num_classes, dtype=y_pred.dtype)
 
         if self.importance_weights is None:
             importance_weights = tf.ones(self.num_classes - 1, dtype=tf.float32)
