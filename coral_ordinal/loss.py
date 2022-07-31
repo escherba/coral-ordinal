@@ -6,14 +6,32 @@ from typing import Optional, Any, Dict
 
 import tensorflow as tf
 from tensorflow.keras import losses
+from tensorflow.python.framework.dtypes import DType
+
 
 from .types import FloatArray
 
 
 def encode_ordinal_labels(
         labels: tf.Tensor,
-        num_classes: int) -> tf.Tensor:
+        num_classes: int,
+        dtype: DType = tf.float32) -> tf.Tensor:
     """Converts ordinal label to one-hot representation
+
+    Args:
+        labels (tf.Tensor): a tensor of ordinal labels (starting with zero)
+        num_classes (int): assumed number of classes
+        dtype (DType): result data type
+
+    Returns:
+        tf.Tensor: a tensor of levels (one-hot-encoded labels)
+
+    Example:
+
+        >>> labels = [0, 1, 2]
+        >>> out = encode_ordinal_labels(labels, num_classes=3, dtype=tf.int32)
+        >>> out.numpy().tolist()
+        [[0, 0], [1, 0], [1, 1]]
 
     Calling this is equivalent to:
 
@@ -22,7 +40,7 @@ def encode_ordinal_labels(
     """
     # This function uses tf.sequence_mask(), which is vectorized, and avoids
     # map_fn() call.
-    return tf.sequence_mask(labels, maxlen=num_classes - 1, dtype=tf.float32)
+    return tf.sequence_mask(labels, maxlen=num_classes - 1, dtype=dtype)
 
 
 def _coral_ordinal_loss_no_reduction(
