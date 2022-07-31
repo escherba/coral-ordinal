@@ -1,3 +1,6 @@
+"""
+Tensorflow Keras implementation of CORAL ordinal regression
+"""
 from .version import __version__
 
 from .layer import CoralOrdinal, CornOrdinal

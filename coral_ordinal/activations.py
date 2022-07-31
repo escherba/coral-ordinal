@@ -13,10 +13,10 @@ def coral_cumprobs(logits: tf.Tensor) -> tf.Tensor:
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
-def corn_cumprobs(logits: tf.Tensor, axis=-1) -> tf.Tensor:
+def corn_cumprobs(logits: tf.Tensor, axis: int = 1) -> tf.Tensor:
     """Turns logits from CORN layer into cumulative probabilities."""
     probs = tf.math.sigmoid(logits)
-    return tf.math.cumprod(probs, axis=1)
+    return tf.math.cumprod(probs, axis=axis)
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
@@ -44,9 +44,7 @@ def cumprobs_to_softmax(cumprobs: tf.Tensor) -> tf.Tensor:
     probs.append(cumprobs[:, num_classes - 2])
 
     # Combine as columns into a new tensor.
-    probs_tensor = tf.concat(tf.transpose(probs), axis=1)
-
-    return probs_tensor
+    return tf.concat(tf.transpose(probs), 1)
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
@@ -72,17 +70,15 @@ def cumprobs_to_label(cumprobs: tf.Tensor, threshold: float = 0.5) -> tf.Tensor:
     """
     assert 0 < threshold < 1, f"threshold must be in (0, 1). Got {threshold}."
     predict_levels = tf.cast(cumprobs > threshold, dtype=tf.int32)
-    predicted_labels = tf.reduce_sum(predict_levels, axis=1)
-    return predicted_labels
+    return tf.reduce_sum(predict_levels, axis=1)
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
-def ordinal_softmax(x, axis=-1):
+def ordinal_softmax(x: tf.Tensor) -> tf.Tensor:
     """Convert the ordinal logit output of CoralOrdinal() to label probabilities.
 
     Args:
       x: Logit output of the CoralOrdinal() layer.
-      axis: Not yet supported.
     """
     # Convert the ordinal logits into cumulative probabilities.
     cum_probs = coral_cumprobs(x)
