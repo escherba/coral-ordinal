@@ -27,7 +27,7 @@ def test_coral_ordinal_softmax() -> None:
         [[ 0.7310586 , -0.4621171 ,  0.73105854],
          [ 0.8807971 , -0.7615941 ,  0.880797  ]],
         dtype=np.float32)
-    assert_allclose(result, expected, atol=1e-6)
+    assert_allclose(result, expected, atol=1e-5, rtol=1e-5)
 
 
 def test_corn_ordinal_softmax() -> None:
@@ -38,4 +38,4 @@ def test_corn_ordinal_softmax() -> None:
         [[ 0.7310586 , 0.07232951, 0.19661193],
          [ 0.8807971 , 0.01420934, 0.10499357]],
         dtype=np.float32)
-    assert_allclose(result, expected, atol=1e-6)
+    assert_allclose(result, expected, atol=1e-5, rtol=1e-5)
