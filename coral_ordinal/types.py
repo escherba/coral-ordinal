@@ -30,7 +30,9 @@ FloatArray = Union[
 BoolArray = Union[
     'np.ndarray[Any, np.dtype[np.bool_]]',
     'np.ndarray[Any, np.dtype[np.bool_]]']
-
+ObjectArray = Union[
+    'np.ndarray[Any, np.dtype[np.object_]]',
+    'np.ndarray[Any, np.dtype[np.object_]]']
 
 NoneType = type(None)
 
