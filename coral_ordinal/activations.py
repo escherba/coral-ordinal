@@ -74,25 +74,15 @@ def cumprobs_to_label(cumprobs: tf.Tensor, threshold: float = 0.5) -> tf.Tensor:
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
-def coral_ordinal_softmax(x: tf.Tensor) -> tf.Tensor:
+def coral_ordinal_softmax(logits: tf.Tensor) -> tf.Tensor:
     """Convert CORAL ordinal logits to label probabilities.
 
     Args:
-        x: Logit output of `CoralOrdinal()` layer.
+        logits: Logit output of `CoralOrdinal()` layer.
     Returns:
         tf.Tensor: probabilities of each class (column) for each sample (row)
-
-    Example:
-
-        >>> coral_ordinal_softmax(tf.constant([[-1., 1], [-2, 2]]))
-        <tf.Tensor: shape=(2, 3), dtype=float32, numpy=
-        array([[ 0.7310586 , -0.4621171 ,  0.73105854],
-               [ 0.8807971 , -0.7615941 ,  0.880797  ]], dtype=float32)>
-
     """
-    # Convert the ordinal logits into cumulative probabilities.
-    cum_probs = coral_cumprobs(x)
-    return cumprobs_to_softmax(cum_probs)
+    return cumprobs_to_softmax(coral_cumprobs(logits))
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
@@ -100,17 +90,8 @@ def corn_ordinal_softmax(logits: tf.Tensor) -> tf.Tensor:
     """Convert CORN ordinal logits to label probabilities.
 
     Args:
-        x: Logit output of `CornOrdinal()` layer.
+        logits: Logit output of `CornOrdinal()` layer.
     Returns:
         tf.Tensor: probabilities of each class (column) for each sample (row)
-
-    Example:
-
-        >>> corn_ordinal_softmax(tf.constant([[-1., 1], [-2, 2]]))
-        <tf.Tensor: shape=(2, 3), dtype=float32, numpy=
-        array([[0.7310586 , 0.07232951, 0.19661193],
-               [0.8807971 , 0.01420934, 0.10499357]], dtype=float32)>
-
     """
-    cum_probs = corn_cumprobs(logits)
-    return cumprobs_to_softmax(cum_probs)
+    return cumprobs_to_softmax(corn_cumprobs(logits))
