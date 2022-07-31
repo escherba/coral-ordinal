@@ -15,9 +15,8 @@ def _create_test_data() -> Tuple[FloatArray, IntArray, IntArray]:
     Test data from example in
     https://github.com/Raschka-research-group/coral-pytorch/blob/main/coral_pytorch/losses.py
     """
-    np.random.seed(10)
-
-    X = np.random.normal(size=(8, 99))
+    random_state = np.random.RandomState(10)
+    X = random_state.normal(size=(8, 99))
     y = np.array([0, 1, 2, 2, 2, 3, 4, 4])
     sample_weights = np.array([0, 1, 1, 1, 1, 1, 1, 1])
     return X, y, sample_weights
