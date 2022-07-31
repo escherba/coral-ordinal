@@ -65,8 +65,6 @@ class CoralOrdinal(layers.Layer):
             name=self.name + "_latent",
             initializer="glorot_uniform",
             regularizer=self.kernel_regularizer,
-            # Not sure if this is necessary:
-            dtype=tf.float32,
             trainable=True,
         )
 
@@ -77,8 +75,6 @@ class CoralOrdinal(layers.Layer):
             name=self.name + "_bias",
             regularizer=self.bias_regularizer,
             initializer="zeros",
-            # Not sure if this is necessary:
-            dtype=tf.float32,
             trainable=True,
         )
 
