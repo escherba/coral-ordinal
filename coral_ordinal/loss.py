@@ -181,18 +181,26 @@ class CornOrdinalCrossEntropy(losses.Loss):
     """
 
     num_classes: Optional[int]
+    sparse: bool
 
     def __init__(
             self,
+            num_classes: Optional[int] = None,
+            sparse: bool = True,
             **kwargs: Any) -> None:
         """Initializes class."""
         super().__init__(**kwargs)
-        self.num_classes = None
+
+        if not sparse:
+            raise NotImplementedError("dense true values not supported")
+        self.num_classes = num_classes
+        self.sparse = sparse
 
     def get_config(self) -> Dict[str, Any]:
         """Return configuration for serializing"""
         config = {
             "num_classes": self.num_classes,
+            "sparse": self.sparse,
         }
         base_config = super().get_config()
         return {**base_config, **config}
