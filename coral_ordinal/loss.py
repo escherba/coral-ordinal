@@ -84,9 +84,15 @@ def _reduce_losses(
 class OrdinalCrossEntropy(losses.Loss):
     """Computes ordinal cross entropy based on ordinal predictions and outcomes."""
 
+    num_classes: Optional[int]
+    sparse: bool
+    importance_weights: Optional[FloatArray]
+    from_type: str
+
     def __init__(
             self,
             num_classes: Optional[int] = None,
+            sparse: bool = True,
             importance_weights: Optional[FloatArray] = None,
             from_type: str = "ordinal_logits",
             name: str = "ordinal_crossentropy",
@@ -106,8 +112,8 @@ class OrdinalCrossEntropy(losses.Loss):
           **kwargs: keyword arguments passed to Loss().
         """
         super().__init__(name=name, **kwargs)
-
         self.num_classes = num_classes
+        self.sparse = sparse
         self.importance_weights = importance_weights
         self.from_type = from_type
 
@@ -127,10 +133,11 @@ class OrdinalCrossEntropy(losses.Loss):
         if num_classes is None:
             num_classes = int(y_pred.get_shape().as_list()[1]) + 1
 
-        # Convert each true label to a vector of ordinal level indicators.
-        # This also ensures that tf_levels is the same type as y_pred (presumably a float).
-        tf_levels = encode_ordinal_labels(
-            tf.squeeze(y_true), num_classes, dtype=y_pred.dtype)
+        if self.sparse:
+            # Convert each true label to a vector of ordinal level indicators.
+            # This also ensures that tf_levels is the same type as y_pred (presumably a float).
+            y_true = encode_ordinal_labels(
+                tf.squeeze(y_true), num_classes, dtype=y_pred.dtype)
 
         if importance_weights is None:
             importance_weights = tf.ones(num_classes - 1, dtype=tf.float32)
@@ -139,7 +146,7 @@ class OrdinalCrossEntropy(losses.Loss):
 
         if from_type == "ordinal_logits":
             loss_values = _coral_ordinal_loss_no_reduction(
-                y_pred, tf_levels, importance_weights
+                y_pred, y_true, importance_weights
             )
         elif from_type == "probs":
             raise NotImplementedError("not yet implemented")
@@ -158,6 +165,7 @@ class OrdinalCrossEntropy(losses.Loss):
         """Return configuration for serializing"""
         config = {
             "num_classes": self.num_classes,
+            "sparse": self.sparse,
             "importance_weights": self.importance_weights,
             "from_type": self.from_type,
         }
@@ -180,6 +188,14 @@ class CornOrdinalCrossEntropy(losses.Loss):
         """Initializes class."""
         super().__init__(**kwargs)
         self.num_classes = None
+
+    def get_config(self) -> Dict[str, Any]:
+        """Return configuration for serializing"""
+        config = {
+            "num_classes": self.num_classes,
+        }
+        base_config = super().get_config()
+        return {**base_config, **config}
 
     def call(
             self,
