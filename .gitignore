@@ -5,6 +5,7 @@
 *.Rproj
 
 .envrc
+.coverage
 
 # Compiled python modules.
 *.pyc

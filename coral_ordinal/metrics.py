@@ -14,8 +14,11 @@ from . import activations
 class MeanAbsoluteErrorLabels(metrics.Metric):
     """Computes mean absolute error for ordinal labels."""
 
+    sparse: bool
+
     def __init__(
             self,
+            sparse: bool = True,
             corn_logits: bool = False,
             threshold: float = 0.5,
             name: str = "mean_absolute_error_labels",
@@ -33,6 +36,7 @@ class MeanAbsoluteErrorLabels(metrics.Metric):
           **kwargs: keyword arguments passed to parent Metric().
         """
         super().__init__(name=name, **kwargs)
+        self.sparse = sparse
         self._corn_logits = corn_logits
         self._threshold = threshold
         self.maes = self.add_weight(name="maes", initializer="zeros")
@@ -64,6 +68,12 @@ class MeanAbsoluteErrorLabels(metrics.Metric):
             activations.cumprobs_to_label(cumprobs, threshold=self._threshold),
             dtype=tf.float32,
         )
+
+        if not self.sparse:
+            # Sum across columns to estimate how many cumulative thresholds are
+            # passed.
+            y_true = tf.reduce_sum(y_true, axis=1)
+
         y_true = tf.cast(y_true, label_pred.dtype)
 
         # remove all dimensions of size 1 (e.g., from [[1], [2]], to [1, 2])
@@ -90,8 +100,9 @@ class MeanAbsoluteErrorLabels(metrics.Metric):
     def get_config(self) -> Dict[str, Any]:
         """Returns the serializable config of the metric."""
         config = {
+            "sparse": self.sparse,
             "threshold": self._threshold,
-            "corn_logits": self._corn_logits
+            "corn_logits": self._corn_logits,
         }
         base_config = super().get_config()
         return {**base_config, **config}

@@ -15,7 +15,7 @@ This package includes:
   * Ordinal output layers: `CoralOrdinal()` & `CornOrdinal()`
   * Ordinal loss function:s `OrdinalCrossEntropy()` & `CornOrdinalCrossEntropy()`
   * Ordinal error metric: `MeanAbsoluteErrorLabels()`
-  * Ordinal activation functions: `ordinal_softmax()` & `corn_ordinal_softmax()`
+  * Ordinal activation functions: `coral_ordinal_softmax()` & `corn_ordinal_softmax()`
   * Ordinal label prediction functions: `cumprobs_to_label()`
 
 This is a work in progress, so please post any issues to the [issue queue](https://github.com/ck37/coral-ordinal/issues). The package was developed as part of the Berkeley D-Lab's [hate speech measurement project](https://hatespeech.berkeley.edu) and paper (Kennedy et al. 2020).
