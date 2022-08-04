@@ -1,4 +1,5 @@
 """Module for testing """
+# pylint: disable=invalid-name
 from typing import Tuple
 
 import pytest
@@ -21,6 +22,30 @@ def _create_test_data() -> Tuple[FloatArray, IntArray, IntArray]:
     y = np.array([0, 1, 2, 2, 2, 3, 4, 4])
     sample_weights = np.array([0, 1, 1, 1, 1, 1, 1, 1])
     return X, y, sample_weights
+
+
+def test_CoralOrdinalCrossentropy() -> None:
+    """basic dense correctness test"""
+    loss = CoralOrdinalCrossEntropy(sparse=False)
+    val = loss(tf.constant([[1., 1.]]), tf.constant([[-1, 1.]]))
+    expect = tf.constant(1.6265233)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+def test_SparseCoralOrdinalCrossentropy() -> None:
+    """basic sparse correctness test"""
+    loss = CoralOrdinalCrossEntropy(sparse=True)
+    val = loss(tf.constant([[2.]]), tf.constant([[-1, 1.]]))
+    expect = tf.constant(1.6265233)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+def test_CornOrdinalCrossentropy() -> None:
+    """basic sparse correctness test"""
+    loss = CoralOrdinalCrossEntropy(sparse=True)
+    val = loss(tf.constant([[2.]]), tf.constant([[-1, 1.]]))
+    expect = tf.constant(1.6265233)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
 
 
 def test_corn_loss() -> None:
