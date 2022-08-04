@@ -7,7 +7,7 @@ import tensorflow as tf
 from tensorflow.keras import models, layers
 
 from coral_ordinal.layer import CornOrdinal, CoralOrdinal
-from coral_ordinal.loss import OrdinalCrossEntropy, CornOrdinalCrossEntropy
+from coral_ordinal.loss import CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy
 from coral_ordinal.types import IntArray, FloatArray
 
 
@@ -47,7 +47,7 @@ def test_corn_loss() -> None:
 def test_coral_loss_reduction(reduction: str, expected_len: int) -> None:
     """Coral loss reduction works"""
     X, y, _ = _create_test_data()
-    coral_loss = OrdinalCrossEntropy(reduction=reduction)
+    coral_loss = CoralOrdinalCrossEntropy(reduction=reduction)
     num_classes = len(np.unique(y))
 
     tf.random.set_seed(1)
