@@ -128,19 +128,18 @@ class CoralOrdinalCrossEntropy(losses.Loss):
         from_type = self.from_type
         importance_weights = self.importance_weights
         y_pred = tf.convert_to_tensor(y_pred)
-        num_classes = self.num_classes
 
-        if num_classes is None:
-            num_classes = int(y_pred.get_shape().as_list()[1]) + 1
+        if self.num_classes is None:
+            self.num_classes = int(y_pred.get_shape().as_list()[1]) + 1
 
         if self.sparse:
             # Convert each true label to a vector of ordinal level indicators.
             # This also ensures that tf_levels is the same type as y_pred (presumably a float).
             y_true = encode_ordinal_labels(
-                tf.squeeze(y_true), num_classes, dtype=y_pred.dtype)
+                tf.squeeze(y_true), self.num_classes, dtype=y_pred.dtype)
 
         if importance_weights is None:
-            importance_weights = tf.ones(num_classes - 1, dtype=tf.float32)
+            importance_weights = tf.ones(self.num_classes - 1, dtype=tf.float32)
         else:
             importance_weights = tf.cast(importance_weights, dtype=tf.float32)
 
@@ -245,7 +244,7 @@ class CornOrdinalCrossEntropy(losses.Loss):
                 ),
                 0.0,  # don't add to loss if label is <= i - 1
             )
-            loss_values += -losses_task
+            loss_values -= losses_task
         loss_values /= self.num_classes
 
         if sample_weight is not None:
