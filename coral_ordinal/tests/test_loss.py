@@ -1,4 +1,5 @@
 """Module for testing """
+# pylint: disable=invalid-name
 from typing import Tuple
 
 import pytest
@@ -7,7 +8,7 @@ import tensorflow as tf
 from tensorflow.keras import models, layers
 
 from coral_ordinal.layer import CornOrdinal, CoralOrdinal
-from coral_ordinal.loss import OrdinalCrossEntropy, CornOrdinalCrossEntropy
+from coral_ordinal.loss import CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy
 from coral_ordinal.types import IntArray, FloatArray
 
 
@@ -21,6 +22,30 @@ def _create_test_data() -> Tuple[FloatArray, IntArray, IntArray]:
     y = np.array([0, 1, 2, 2, 2, 3, 4, 4])
     sample_weights = np.array([0, 1, 1, 1, 1, 1, 1, 1])
     return X, y, sample_weights
+
+
+def test_CoralOrdinalCrossentropy() -> None:
+    """basic dense correctness test"""
+    loss = CoralOrdinalCrossEntropy(sparse=False)
+    val = loss(tf.constant([[1., 1.]]), tf.constant([[-1, 1.]]))
+    expect = tf.constant(1.6265233)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+def test_SparseCoralOrdinalCrossentropy() -> None:
+    """basic sparse correctness test"""
+    loss = CoralOrdinalCrossEntropy(sparse=True)
+    val = loss(tf.constant([[2.]]), tf.constant([[-1, 1.]]))
+    expect = tf.constant(1.6265233)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+def test_CornOrdinalCrossentropy() -> None:
+    """basic sparse correctness test"""
+    loss = CoralOrdinalCrossEntropy(sparse=True)
+    val = loss(tf.constant([[2.]]), tf.constant([[-1, 1.]]))
+    expect = tf.constant(1.6265233)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
 
 
 def test_corn_loss() -> None:
@@ -47,7 +72,7 @@ def test_corn_loss() -> None:
 def test_coral_loss_reduction(reduction: str, expected_len: int) -> None:
     """Coral loss reduction works"""
     X, y, _ = _create_test_data()
-    coral_loss = OrdinalCrossEntropy(reduction=reduction)
+    coral_loss = CoralOrdinalCrossEntropy(reduction=reduction)
     num_classes = len(np.unique(y))
 
     tf.random.set_seed(1)

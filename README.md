@@ -13,7 +13,7 @@ Tensorflow Keras implementation of ordinal regression (aka *ordinal classificati
 This package includes:
 
   * Ordinal output layers: `CoralOrdinal()` & `CornOrdinal()`
-  * Ordinal loss function:s `OrdinalCrossEntropy()` & `CornOrdinalCrossEntropy()`
+  * Ordinal loss function:s `CoralOrdinalCrossEntropy()` & `CornOrdinalCrossEntropy()`
   * Ordinal error metric: `MeanAbsoluteErrorLabels()`
   * Ordinal activation functions: `coral_ordinal_softmax()` & `corn_ordinal_softmax()`
   * Ordinal label prediction functions: `cumprobs_to_label()`
@@ -56,7 +56,7 @@ NUM_CLASSES = 5
 model = tf.keras.Sequential()
 model.add(tf.keras.layers.Dense(32, activation = "relu"))
 model.add(coral.CoralOrdinal(num_classes = NUM_CLASSES)) # Ordinal variable has 5 labels, 0 through 4.
-model.compile(loss = coral.OrdinalCrossEntropy(),
+model.compile(loss = coral.CoralOrdinalCrossEntropy(),
               metrics = [coral.MeanAbsoluteErrorLabels()])
 ```
 

@@ -4,7 +4,7 @@ Tensorflow Keras implementation of CORAL ordinal regression
 from .version import __version__
 
 from .layer import CoralOrdinal, CornOrdinal
-from .loss import OrdinalCrossEntropy, CornOrdinalCrossEntropy
+from .loss import CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy
 from .metrics import MeanAbsoluteErrorLabels
 from .activations import (
     coral_ordinal_softmax,
@@ -20,7 +20,7 @@ __all__ = [
     "CoralOrdinal",
     "CornOrdinal",
     "MeanAbsoluteErrorLabels",
-    "OrdinalCrossEntropy",
+    "CoralOrdinalCrossEntropy",
     "CornOrdinalCrossEntropy",
     "coral_ordinal_softmax",
     "corn_ordinal_softmax",
