@@ -30,7 +30,7 @@ def _create_test_data() -> Tuple[FloatArray, IntArray]:
 
 
 @pytest.mark.parametrize(
-    "klass", [(CornOrdinal), (CoralOrdinal)],
+    "klass", [CornOrdinal, CoralOrdinal],
 )
 def test_corn_layer_builtin(klass: layers.Layer) -> None:
     """Class passes `layer_test`"""
@@ -50,7 +50,7 @@ def test_corn_layer() -> None:
 
 
 @pytest.mark.parametrize(
-    "klass", [(CornOrdinal), (CoralOrdinal)],
+    "klass", [CornOrdinal, CoralOrdinal],
 )
 def test_serializing_layers(klass: layers.Layer) -> None:
     """Layer serialization works"""
