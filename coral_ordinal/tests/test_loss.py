@@ -14,7 +14,7 @@ from coral_ordinal.types import IntArray, FloatArray
 
 def _create_test_data() -> Tuple[FloatArray, IntArray, IntArray]:
     """Fixture that creates test data
-    Test data from example in
+    The data is from example in
     https://github.com/Raschka-research-group/coral-pytorch/blob/main/coral_pytorch/losses.py
     """
     random_state = np.random.RandomState(10)
@@ -109,7 +109,7 @@ def test_corn_loss_reduction(reduction: str, expected_len: int) -> None:
 
 @pytest.mark.parametrize(
     "y_lt",
-    [(1), (4), (5)],
+    [1, 4, 5],
 )
 def test_sample_weights_loss(y_lt: int) -> None:
     """loss calculation also works when not all labels are present."""

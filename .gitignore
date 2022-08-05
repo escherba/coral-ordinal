@@ -4,6 +4,8 @@
 .Ruserdata
 *.Rproj
 
+.idea/
+
 .envrc
 .coverage
 

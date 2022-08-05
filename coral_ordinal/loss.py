@@ -214,7 +214,7 @@ class CornOrdinalCrossEntropy(losses.Loss):
         Args:
           y_true: true labels (0..N-1)
           y_pred: predicted logits (from CornLayer())
-          sample_weights: optional; provide sample weights for each sample.
+          sample_weight: optional; provide sample weights for each sample.
 
         Returns:
           loss: tf.Tensor, that contains the loss value.

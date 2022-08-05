@@ -1,6 +1,4 @@
-"""Functions to convert logits to probabilities (CDF) and softmax.
-
-Also conversion from probabilities to labels.
+"""Functions to convert logits to probabilities (CDF), probabilities to laabels, and softmax.
 """
 
 import tensorflow as tf
@@ -27,12 +25,10 @@ def cumprobs_to_softmax(cumprobs: tf.Tensor) -> tf.Tensor:
     num_classes = cumprobs.shape[1] + 1
 
     # Create a list of tensors.
-    probs = []
-
     # First, get probability predictions out of the cumulative logits.
     # Column 0 is Probability that y > 0, so Pr(y = 0) = 1 - Pr(y > 0)
     # Pr(Y = 0) = 1 - s(logit for column 0)
-    probs.append(1.0 - cumprobs[:, 0])
+    probs = [1.0 - cumprobs[:, 0]]
 
     # For the other columns, the probability is:
     # Pr(y = k) = Pr(y > k) - Pr(y > k - 1)
