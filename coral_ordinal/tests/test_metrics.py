@@ -1,10 +1,12 @@
 """Tests for coral metric function."""
 from typing import Tuple, List, Union
 
+import pytest
 import numpy as np
 import tensorflow as tf
 
 from coral_ordinal.metrics import MeanAbsoluteErrorLabels
+from coral_ordinal.utils import encode_ordinal_labels_numpy
 
 
 def test_config() -> None:
@@ -39,6 +41,79 @@ def get_data() -> Tuple[List[List[Union[int, List[int]]]], List[List[List[float]
         ],
     ]
     return actuals, preds
+
+
+def test_dense_ordinal_mae_mismatch() -> None:
+    """basic dense correctness test"""
+    loss = MeanAbsoluteErrorLabels(sparse=False)
+    val = loss(tf.constant([[1., 1.]]), tf.constant([[-1, 1.]]))
+    expect = tf.constant(1.0)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+def test_sparse_ordinal_mae_mismtatch() -> None:
+    """basic sparse correctness test"""
+    loss = MeanAbsoluteErrorLabels(sparse=True)
+    val = loss(tf.constant([[2.]]), tf.constant([[-1, 1.]]))
+    expect = tf.constant(1.0)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+def test_dense_ordinal_mae_match() -> None:
+    """basic dense correctness test"""
+    loss = MeanAbsoluteErrorLabels(sparse=False)
+    val = loss(tf.constant([[1., 1.]]), tf.constant([[1, 1.]]))
+    expect = tf.constant(0.0)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+def test_sparse_ordinal_mae_match() -> None:
+    """basic sparse correctness test"""
+    loss = MeanAbsoluteErrorLabels(sparse=True)
+    val = loss(tf.constant([[2.]]), tf.constant([[1, 1.]]))
+    expect = tf.constant(0.0)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+@pytest.mark.parametrize(
+    "klass",
+    [MeanAbsoluteErrorLabels],
+)
+def test_sparse_order_invariance(klass: type) -> None:
+    """test order invariance (equal after shuffling)"""
+    for _ in range(10):
+        num_classes = np.random.randint(2, 8)
+        loss = klass(sparse=True)
+        y_true = np.random.randint(0, num_classes, 20)
+        y_pred1 = encode_ordinal_labels_numpy(
+            y_true, num_classes=num_classes)
+        observed1 = loss(y_true, y_pred1)
+        np.random.shuffle(y_true)
+        y_pred2 = encode_ordinal_labels_numpy(
+            y_true, num_classes=num_classes)
+        observed2 = loss(y_true, y_pred2)
+        tf.debugging.assert_near(observed1, observed2)
+
+
+@pytest.mark.parametrize(
+    "klass",
+    [MeanAbsoluteErrorLabels],
+)
+def test_sparse_inequality(klass: type) -> None:
+    """test expected inequality (equal or worse after shuffling)"""
+    for _ in range(10):
+        num_classes = np.random.randint(2, 8)
+        loss = klass(sparse=True)
+        y_true = np.random.randint(0, num_classes, 20)
+        y_true_orig = y_true.copy()
+        y_pred1 = encode_ordinal_labels_numpy(
+            y_true_orig, num_classes=num_classes)
+        observed1 = loss(y_true_orig, y_pred1)
+        np.random.shuffle(y_true)
+        y_pred2 = encode_ordinal_labels_numpy(
+            y_true, num_classes=num_classes)
+        observed2 = loss(y_true_orig, y_pred2)
+        tf.debugging.assert_less_equal(observed1, observed2)
 
 
 def test_mae_labels_score() -> None:
