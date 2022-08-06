@@ -41,7 +41,6 @@ def test_sparse_coral_loss_mismatch() -> None:
     tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
 
 
-
 def test_dense_corn_loss_mismatch() -> None:
     """basic dense correctness test"""
     loss = CornOrdinalCrossEntropy(sparse=False)
