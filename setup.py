@@ -16,7 +16,7 @@ setuptools.setup(
     author='Chris Kennedy, Stephen Matthews, Georg M. Goerg',
     author_email='chrisken@gmail.com',
     packages=setuptools.find_packages(),
-    install_requires=['numpy', 'tensorflow>=2.2'],
+    install_requires=['numpy'],
     version=version['__version__'],
     long_description_content_type="text/markdown",
     license='MIT',
