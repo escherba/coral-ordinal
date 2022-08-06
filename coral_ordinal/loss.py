@@ -244,7 +244,6 @@ class CornOrdinalCrossEntropy(losses.Loss):
                 ),
                 0.0,  # don't add to loss if label is <= i - 1
             )
-
             loss_values -= losses_task
             set_mask = label_gt_i
         loss_values /= self.num_classes
