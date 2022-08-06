@@ -6,7 +6,7 @@ Coral-ordinal layers
 from typing import Optional, Any, Dict
 import warnings
 import tensorflow as tf
-from tensorflow.keras import regularizers, activations, layers
+from keras import regularizers, activations, layers
 
 from .types import Regularizer, Activation
 

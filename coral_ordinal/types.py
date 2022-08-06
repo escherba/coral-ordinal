@@ -4,7 +4,7 @@ Custom types module
 from typing import Tuple, List, Callable, Union, TypeVar, Any  # pylint: disable=unused-import
 
 import tensorflow as tf
-from tensorflow.keras import initializers, regularizers, constraints
+from keras import initializers, regularizers, constraints
 from keras.engine.keras_tensor import KerasTensor
 
 import numpy as np  # pylint: disable=unused-import

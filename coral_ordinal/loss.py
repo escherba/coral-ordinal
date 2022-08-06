@@ -5,8 +5,9 @@ Ordinal loss functions
 from typing import Optional, Any, Dict
 
 import tensorflow as tf
-from tensorflow.keras import losses
 from tensorflow.python.framework import dtypes
+from tensorflow.keras.losses import Reduction
+from keras import losses
 
 from .utils import encode_ordinal_labels
 from .types import FloatArray
@@ -30,18 +31,18 @@ def _coral_ordinal_loss_no_reduction(
 
 def _reduce_losses(
         values: tf.Tensor,
-        reduction: losses.Reduction) -> tf.Tensor:
+        reduction: Reduction) -> tf.Tensor:
     """Reduces loss values to specified reduction."""
-    if reduction == losses.Reduction.NONE:
+    if reduction == Reduction.NONE:
         return values
 
     if reduction in [
-        losses.Reduction.AUTO,
-        losses.Reduction.SUM_OVER_BATCH_SIZE,
+        Reduction.AUTO,
+        Reduction.SUM_OVER_BATCH_SIZE,
     ]:
         return tf.reduce_mean(values)
 
-    if reduction == losses.Reduction.SUM:
+    if reduction == Reduction.SUM:
         return tf.reduce_sum(values)
 
     raise ValueError(f"'{reduction}' is not a valid reduction.")
