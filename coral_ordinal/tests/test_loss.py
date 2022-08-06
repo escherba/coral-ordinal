@@ -41,10 +41,18 @@ def test_SparseCoralOrdinalCrossentropy() -> None:
 
 
 def test_CornOrdinalCrossentropy() -> None:
+    """basic dense correctness test"""
+    loss = CornOrdinalCrossEntropy(sparse=False)
+    val = loss(tf.constant([[1., 1.]]), tf.constant([[-1, 1.]]))
+    expect = tf.constant(0.54217446)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+def test_SparseCornOrdinalCrossentropy() -> None:
     """basic sparse correctness test"""
-    loss = CoralOrdinalCrossEntropy(sparse=True)
+    loss = CornOrdinalCrossEntropy(sparse=True)
     val = loss(tf.constant([[2.]]), tf.constant([[-1, 1.]]))
-    expect = tf.constant(1.6265233)
+    expect = tf.constant(0.54217446)
     tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
 
 
@@ -79,7 +87,6 @@ def test_coral_loss_reduction(reduction: str, expected_len: int) -> None:
     coral_net = CoralOrdinal(num_classes=num_classes, input_dim=X.shape[1])
     logits = coral_net(X)
     loss_val = coral_loss(y_true=y, y_pred=logits)
-    print(loss_val)
     if expected_len == 1:
         assert loss_val.numpy() > 0
     else:
@@ -100,7 +107,6 @@ def test_corn_loss_reduction(reduction: str, expected_len: int) -> None:
     corn_net = CornOrdinal(num_classes=num_classes, input_dim=X.shape[1])
     logits = corn_net(X)
     loss_val = corn_loss(y_true=y, y_pred=logits)
-    print(loss_val)
     if expected_len == 1:
         assert loss_val.numpy() > 0
     else:
