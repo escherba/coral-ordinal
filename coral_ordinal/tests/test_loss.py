@@ -1,5 +1,4 @@
 """Module for testing """
-# pylint: disable=invalid-name
 from typing import Tuple
 
 import pytest
