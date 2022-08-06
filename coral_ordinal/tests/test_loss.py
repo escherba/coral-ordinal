@@ -5,11 +5,12 @@ from typing import Tuple
 import pytest
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import models, layers
+from keras import models, layers
 
 from coral_ordinal.layer import CornOrdinal, CoralOrdinal
 from coral_ordinal.loss import CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy
 from coral_ordinal.types import IntArray, FloatArray
+from coral_ordinal.utils import encode_ordinal_labels_numpy
 
 
 def _create_test_data() -> Tuple[FloatArray, IntArray, IntArray]:
@@ -24,7 +25,7 @@ def _create_test_data() -> Tuple[FloatArray, IntArray, IntArray]:
     return X, y, sample_weights
 
 
-def test_CoralOrdinalCrossentropy() -> None:
+def test_dense_coral_loss_mismatch() -> None:
     """basic dense correctness test"""
     loss = CoralOrdinalCrossEntropy(sparse=False)
     val = loss(tf.constant([[1., 1.]]), tf.constant([[-1, 1.]]))
@@ -32,7 +33,7 @@ def test_CoralOrdinalCrossentropy() -> None:
     tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
 
 
-def test_SparseCoralOrdinalCrossentropy() -> None:
+def test_sparse_coral_loss_mismatch() -> None:
     """basic sparse correctness test"""
     loss = CoralOrdinalCrossEntropy(sparse=True)
     val = loss(tf.constant([[2.]]), tf.constant([[-1, 1.]]))
@@ -40,7 +41,8 @@ def test_SparseCoralOrdinalCrossentropy() -> None:
     tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
 
 
-def test_CornOrdinalCrossentropy() -> None:
+
+def test_dense_corn_loss_mismatch() -> None:
     """basic dense correctness test"""
     loss = CornOrdinalCrossEntropy(sparse=False)
     val = loss(tf.constant([[1., 1.]]), tf.constant([[-1, 1.]]))
@@ -48,12 +50,85 @@ def test_CornOrdinalCrossentropy() -> None:
     tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
 
 
-def test_SparseCornOrdinalCrossentropy() -> None:
+def test_sparse_corn_loss_mismatch() -> None:
     """basic sparse correctness test"""
     loss = CornOrdinalCrossEntropy(sparse=True)
     val = loss(tf.constant([[2.]]), tf.constant([[-1, 1.]]))
     expect = tf.constant(0.54217446)
     tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+def test_dense_coral_loss_match() -> None:
+    """basic dense correctness test"""
+    loss = CoralOrdinalCrossEntropy(sparse=False)
+    val = loss(tf.constant([[1., 1.]]), tf.constant([[1, 1.]]))
+    expect = tf.constant(0.62652344)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+def test_sparse_coral_loss_match() -> None:
+    """basic sparse correctness test"""
+    loss = CoralOrdinalCrossEntropy(sparse=True)
+    val = loss(tf.constant([[2.]]), tf.constant([[1, 1.]]))
+    expect = tf.constant(0.62652344)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+def test_dense_corn_loss_match() -> None:
+    """basic dense correctness test"""
+    loss = CornOrdinalCrossEntropy(sparse=False)
+    val = loss(tf.constant([[1., 1.]]), tf.constant([[1, 1.]]))
+    expect = tf.constant(0.20884115)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+def test_sparse_corn_loss_match() -> None:
+    """basic sparse correctness test"""
+    loss = CornOrdinalCrossEntropy(sparse=True)
+    val = loss(tf.constant([[2.]]), tf.constant([[1, 1.]]))
+    expect = tf.constant(0.20884115)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+@pytest.mark.parametrize(
+    "klass",
+    [CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy],
+)
+def test_sparse_order_invariance(klass: type) -> None:
+    """test order invariance (equal after shuffling)"""
+    for _ in range(10):
+        num_classes = np.random.randint(2, 8)
+        loss = klass(sparse=True)
+        y_true = np.random.randint(0, num_classes, 20)
+        y_pred1 = encode_ordinal_labels_numpy(
+            y_true, num_classes=num_classes)
+        observed1 = loss(y_true, y_pred1)
+        np.random.shuffle(y_true)
+        y_pred2 = encode_ordinal_labels_numpy(
+            y_true, num_classes=num_classes)
+        observed2 = loss(y_true, y_pred2)
+        tf.debugging.assert_near(observed1, observed2)
+
+
+@pytest.mark.parametrize(
+    "klass",
+    [CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy],
+)
+def test_sparse_inequality(klass: type) -> None:
+    """test expected inequality (equal or worse after shuffling)"""
+    for _ in range(10):
+        num_classes = np.random.randint(2, 8)
+        loss = klass(sparse=True)
+        y_true = np.random.randint(0, num_classes, 20)
+        y_true_orig = y_true.copy()
+        y_pred1 = encode_ordinal_labels_numpy(
+            y_true_orig, num_classes=num_classes)
+        observed1 = loss(y_true_orig, y_pred1)
+        np.random.shuffle(y_true)
+        y_pred2 = encode_ordinal_labels_numpy(
+            y_true, num_classes=num_classes)
+        observed2 = loss(y_true_orig, y_pred2)
+        tf.debugging.assert_less_equal(observed1, observed2)
 
 
 def test_corn_loss() -> None:
