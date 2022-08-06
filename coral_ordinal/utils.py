@@ -11,7 +11,7 @@ from .types import IntArray, FloatArray
 def encode_ordinal_labels_numpy(
         array: IntArray,
         num_classes: int,
-        skip_last: bool = False,
+        skip_last: bool = True,
         dtype: type = np.float32) -> FloatArray:
     """Encoder ordinal data to one-hot type
 
