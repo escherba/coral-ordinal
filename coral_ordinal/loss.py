@@ -307,10 +307,6 @@ class OrdinalSquaredEarthMoversDistance(tf.keras.losses.Loss):
         """forward pass"""
         y_pred = tf.convert_to_tensor(y_pred)
         y_true = tf.cast(y_true, y_pred.dtype)
-
-        if self.num_classes is None:
-            self.num_classes = int(y_pred.get_shape().as_list()[1]) + 1
-
         importance_weights = self.importance_weights
 
         if self.num_classes is None:
