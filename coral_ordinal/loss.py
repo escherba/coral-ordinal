@@ -5,43 +5,12 @@ Ordinal loss functions
 from typing import Optional, Any, Dict
 
 import tensorflow as tf
-from tensorflow.keras import losses
 from tensorflow.python.framework import dtypes
+from tensorflow.keras.losses import Reduction
+from keras import losses
 
-
+from .utils import encode_ordinal_labels
 from .types import FloatArray
-
-
-def encode_ordinal_labels(
-        labels: tf.Tensor,
-        num_classes: int,
-        dtype: dtypes.DType = tf.float32) -> tf.Tensor:
-    """Convert ordinal label to one-hot representation
-
-    Args:
-        labels (tf.Tensor): a tensor of ordinal labels (starting with zero)
-        num_classes (int): assumed number of classes
-        dtype (dtypes.DType): result data type
-
-    Returns:
-        tf.Tensor: a tensor of levels (one-hot-encoded labels)
-
-    Example:
-
-        >>> encode_ordinal_labels([0, 1, 2], num_classes=3)
-        <tf.Tensor: shape=(3, 2), dtype=float32, numpy=
-        array([[0., 0.],
-               [1., 0.],
-               [1., 1.]], dtype=float32)>
-
-    Calling this is equivalent to:
-
-        levels = [1] * label + [0] * (num_classes - 1 - label)
-
-    """
-    # This function uses tf.sequence_mask(), which is vectorized, and avoids
-    # map_fn() call.
-    return tf.sequence_mask(labels, maxlen=num_classes - 1, dtype=dtype)
 
 
 def _coral_ordinal_loss_no_reduction(
@@ -62,18 +31,18 @@ def _coral_ordinal_loss_no_reduction(
 
 def _reduce_losses(
         values: tf.Tensor,
-        reduction: losses.Reduction) -> tf.Tensor:
+        reduction: Reduction) -> tf.Tensor:
     """Reduces loss values to specified reduction."""
-    if reduction == losses.Reduction.NONE:
+    if reduction == Reduction.NONE:
         return values
 
     if reduction in [
-        losses.Reduction.AUTO,
-        losses.Reduction.SUM_OVER_BATCH_SIZE,
+        Reduction.AUTO,
+        Reduction.SUM_OVER_BATCH_SIZE,
     ]:
         return tf.reduce_mean(values)
 
-    if reduction == losses.Reduction.SUM:
+    if reduction == Reduction.SUM:
         return tf.reduce_sum(values)
 
     raise ValueError(f"'{reduction}' is not a valid reduction.")

@@ -4,8 +4,8 @@ Coral-ordinal metrics
 from typing import Any, Optional, Dict
 
 import tensorflow as tf
-from tensorflow.keras import backend as K
-from tensorflow.keras import metrics
+from keras import backend as K
+from keras import metrics
 
 from . import activations
 
