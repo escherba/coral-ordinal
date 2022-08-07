@@ -106,13 +106,3 @@ class MeanAbsoluteErrorLabels(metrics.Metric):
         }
         base_config = super().get_config()
         return {**base_config, **config}
-
-
-# # WIP
-# def MeanAbsoluteErrorLabels_v2(y_true, y_pred):
-#   # There will be num_classes - 1 cumulative logits as columns of the tensor.
-#   num_classes = y_pred.shape[1] + 1
-#
-#   probs = logits_to_probs(y_pred, num_classes)
-#
-# # RootMeanSquaredErrorLabels
