@@ -7,7 +7,7 @@ import tempfile
 import pytest
 
 import numpy as np
-from tensorflow.keras import models, layers
+from keras import models, layers
 
 try:
     from keras.testing_infra.test_utils import layer_test
