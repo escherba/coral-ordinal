@@ -12,7 +12,7 @@ from keras import losses
 
 from .activations import corn_cumprobs
 from .utils import encode_ordinal_labels
-from .types import FloatArray
+from .types import TensorLike
 
 
 def _reduce_losses(
@@ -41,14 +41,14 @@ class CoralOrdinalCrossEntropy(losses.Loss):
 
     num_classes: Optional[int]
     sparse: bool
-    importance_weights: Optional[FloatArray]
+    importance_weights: Optional[TensorLike]
     from_type: str
 
     def __init__(
             self,
             num_classes: Optional[int] = None,
             sparse: bool = True,
-            importance_weights: Optional[FloatArray] = None,
+            importance_weights: Optional[TensorLike] = None,
             from_type: str = "ordinal_logits",
             name: str = "ordinal_crossentropy",
             **kwargs: Any) -> None:
@@ -146,13 +146,13 @@ class CornOrdinalCrossEntropy(losses.Loss):
 
     num_classes: Optional[int]
     sparse: bool
-    importance_weights: Optional[FloatArray]
+    importance_weights: Optional[TensorLike]
 
     def __init__(
             self,
             num_classes: Optional[int] = None,
             sparse: bool = True,
-            importance_weights: Optional[FloatArray] = None,
+            importance_weights: Optional[TensorLike] = None,
             **kwargs: Any) -> None:
         """Initializes class."""
         super().__init__(**kwargs)
@@ -258,14 +258,14 @@ class OrdinalSquaredEarthMoversDistance(tf.keras.losses.Loss):
 
     num_classes: Optional[int]
     sparse: bool
-    importance_weights: Optional[FloatArray]
+    importance_weights: Optional[TensorLike]
     from_type: str
 
     def __init__(
             self,
             num_classes: Optional[int] = None,
             sparse: bool = True,
-            importance_weights: Optional[FloatArray] = None,
+            importance_weights: Optional[TensorLike] = None,
             from_type: str = "ordinal_logits",
             name: str = "ordinal_earth_movers_distance",
             **kwargs: Any) -> None:
