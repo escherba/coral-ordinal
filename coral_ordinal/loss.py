@@ -9,6 +9,7 @@ from tensorflow.python.framework import dtypes
 from tensorflow.keras.losses import Reduction
 from keras import losses
 
+from .activations import corn_cumprobs
 from .utils import encode_ordinal_labels
 from .types import FloatArray
 
@@ -188,6 +189,7 @@ class CornOrdinalCrossEntropy(losses.Loss):
         """
         y_pred = tf.convert_to_tensor(y_pred, dtype=tf.float32)
         y_true = tf.cast(y_true, y_pred.dtype)
+
         if self.num_classes is None:
             self.num_classes = int(y_pred.get_shape().as_list()[1]) + 1
 
@@ -222,3 +224,87 @@ class CornOrdinalCrossEntropy(losses.Loss):
             loss_values = tf.multiply(loss_values, sample_weight)
 
         return _reduce_losses(loss_values, self.reduction)
+
+
+class OrdinalEarthMoversDistance(tf.keras.losses.Loss):
+    """"Squared Earth Movers' Distance Loss
+
+    Note: See [2, Eq. 14] and [3, Eq. 10]. Assumptions from [3] interpreted for
+    histograms: Compared histograms must (a) have equal mass, and (b) use the same
+    bins (umk-wk, umk+wk) for any k.
+
+    Original implementation:
+    https://github.com/ldgarcia/canopy-cover-tree-count-estimation/blob/main/dlc/losses/emd.py
+
+    References:
+
+    [1] Avi-Aharon, M., Arbelle, A., & Raviv, T. R. (2020).
+        DeepHist: Differentiable Joint and Color Histogram Layers for
+        Image-to-Image Translation.
+        arXiv preprint arXiv:2005.03995. URL: https://arxiv.org/abs/2005.03995
+
+    [2] Rubner, Y., Tomasi, C., & Guibas, L. J. (2000).
+        The earth mover's distance as a metric for image retrieval.
+        International journal of computer vision, 40(2), 99-121.
+
+    [3] Hou, L., Yu, C. P., & Samaras, D. (2016).
+        Squared earth mover's distance-based loss for training deep neural networks.
+        arXiv preprint arXiv:1611.05916. URL: https://arxiv.org/abs/1611.05916
+    """
+
+    num_classes: Optional[int]
+    sparse: bool
+    from_type: str
+
+    def __init__(
+            self,
+            num_classes: Optional[int] = None,
+            sparse: bool = True,
+            from_type: str = "ordinal_logits",
+            name: str = "ordinal_earth_movers_distance",
+            **kwargs: Any) -> None:
+        """Squared Earth Movers' Distance Loss
+        Args:
+          num_classes: number of ranks (aka labels or values) in the ordinal variable.
+            This is optional; can be inferred from size of y_pred at runtime.
+          from_type: one of "ordinal_logits" (default), "logits", or "probs".
+            Ordinal logits are the output of a CoralOrdinal() layer with no activation.
+            (Not yet implemented) Logits are the output of a dense layer with no activation.
+            (Not yet implemented) Probs are the probability outputs of a softmax or ordinal_softmax
+            layer.
+          name: name of layer
+          **kwargs: keyword arguments passed to Loss().
+        """
+        super().__init__(name=name, **kwargs)
+        self.num_classes = num_classes
+        self.sparse = sparse
+        self.from_type = from_type
+
+    def get_config(self) -> Dict[str, Any]:
+        """Return configuration for serializing"""
+        config = {
+            "num_classes": self.num_classes,
+            "sparse": self.sparse,
+            "from_type": self.from_type,
+        }
+        base_config = super().get_config()
+        return {**base_config, **config}
+
+    def call(self, y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
+        """forward pass"""
+        y_pred = tf.convert_to_tensor(y_pred)
+        y_true = tf.cast(y_true, y_pred.dtype)
+
+        if self.num_classes is None:
+            self.num_classes = int(y_pred.get_shape().as_list()[1]) + 1
+
+        if self.sparse:
+            y_true = encode_ordinal_labels(y_true, num_classes=self.num_classes)
+
+        y_pred = corn_cumprobs(y_pred, axis=-1)
+        loss_values = tf.math.squared_difference(y_true, y_pred)
+        return _reduce_losses(loss_values, self.reduction)
+        # reduction = self._get_reduction()
+        # if reduction == tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE:
+        #     return tf.reduce_mean(distance)
+        # return distance

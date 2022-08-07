@@ -7,7 +7,11 @@ import tensorflow as tf
 from keras import models, layers
 
 from coral_ordinal.layer import CornOrdinal, CoralOrdinal
-from coral_ordinal.loss import CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy
+from coral_ordinal.loss import (
+    CoralOrdinalCrossEntropy,
+    CornOrdinalCrossEntropy,
+    OrdinalEarthMoversDistance,
+)
 from coral_ordinal.types import IntArray, FloatArray
 from coral_ordinal.utils import encode_ordinal_labels_numpy
 
@@ -90,7 +94,7 @@ def test_sparse_corn_loss_match() -> None:
 
 @pytest.mark.parametrize(
     "klass",
-    [CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy],
+    [CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy, OrdinalEarthMoversDistance],
 )
 def test_sparse_order_invariance(klass: type) -> None:
     """test order invariance (equal after shuffling)"""
@@ -110,7 +114,7 @@ def test_sparse_order_invariance(klass: type) -> None:
 
 @pytest.mark.parametrize(
     "klass",
-    [CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy],
+    [CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy, OrdinalEarthMoversDistance],
 )
 def test_sparse_inequality(klass: type) -> None:
     """test expected inequality (equal or worse after shuffling)"""
