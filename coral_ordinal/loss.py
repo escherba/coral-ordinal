@@ -5,9 +5,8 @@ Ordinal loss functions
 from typing import Optional, Any, Dict
 
 import tensorflow as tf
-from tensorflow.keras.losses import Reduction
 from tensorflow.python.framework import dtypes
-
+from tensorflow.keras.losses import Reduction
 from keras import losses
 
 from .utils import encode_ordinal_labels
