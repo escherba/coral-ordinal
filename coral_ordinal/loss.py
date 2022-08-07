@@ -255,12 +255,14 @@ class OrdinalEarthMoversDistance(tf.keras.losses.Loss):
 
     num_classes: Optional[int]
     sparse: bool
+    importance_weights: Optional[FloatArray]
     from_type: str
 
     def __init__(
             self,
             num_classes: Optional[int] = None,
             sparse: bool = True,
+            importance_weights: Optional[FloatArray] = None,
             from_type: str = "ordinal_logits",
             name: str = "ordinal_earth_movers_distance",
             **kwargs: Any) -> None:
@@ -268,6 +270,7 @@ class OrdinalEarthMoversDistance(tf.keras.losses.Loss):
         Args:
           num_classes: number of ranks (aka labels or values) in the ordinal variable.
             This is optional; can be inferred from size of y_pred at runtime.
+          importance_weights: class weights for each binary classification task.
           from_type: one of "ordinal_logits" (default), "logits", or "probs".
             Ordinal logits are the output of a CoralOrdinal() layer with no activation.
             (Not yet implemented) Logits are the output of a dense layer with no activation.
@@ -279,6 +282,7 @@ class OrdinalEarthMoversDistance(tf.keras.losses.Loss):
         super().__init__(name=name, **kwargs)
         self.num_classes = num_classes
         self.sparse = sparse
+        self.importance_weights = importance_weights
         self.from_type = from_type
 
     def get_config(self) -> Dict[str, Any]:
@@ -286,6 +290,7 @@ class OrdinalEarthMoversDistance(tf.keras.losses.Loss):
         config = {
             "num_classes": self.num_classes,
             "sparse": self.sparse,
+            "importance_weights": self.importance_weights,
             "from_type": self.from_type,
         }
         base_config = super().get_config()
@@ -299,9 +304,18 @@ class OrdinalEarthMoversDistance(tf.keras.losses.Loss):
         if self.num_classes is None:
             self.num_classes = int(y_pred.get_shape().as_list()[1]) + 1
 
+        importance_weights = self.importance_weights
+        if importance_weights is None:
+            importance_weights = tf.ones(self.num_classes - 1, dtype=tf.float32)
+        else:
+            importance_weights = tf.cast(importance_weights, dtype=tf.float32)
+
+        if self.num_classes is None:
+            self.num_classes = int(y_pred.get_shape().as_list()[1]) + 1
+
         if self.sparse:
             y_true = encode_ordinal_labels(y_true, num_classes=self.num_classes)
 
         y_pred = corn_cumprobs(y_pred, axis=-1)
-        loss_values = tf.math.squared_difference(y_true, y_pred)
+        loss_values = tf.math.squared_difference(y_true, y_pred) * importance_weights
         return _reduce_losses(loss_values, self.reduction)
