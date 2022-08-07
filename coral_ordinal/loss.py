@@ -15,22 +15,6 @@ from .utils import encode_ordinal_labels
 from .types import FloatArray
 
 
-def _coral_ordinal_loss_no_reduction(
-        logits: tf.Tensor,
-        levels: tf.Tensor,
-        importance_weights: Optional[tf.Tensor] = None) -> tf.Tensor:
-    """Compute ordinal loss without reduction."""
-    levels = tf.cast(levels, dtype=logits.dtype)
-    loss_values = (
-        tf.math.log_sigmoid(logits) * levels
-        + (tf.math.log_sigmoid(logits) - logits) * (1.0 - levels)
-    )
-    if importance_weights is not None:
-        importance_weights = tf.cast(importance_weights, dtype=loss_values.dtype)
-        loss_values = tf.multiply(loss_values, importance_weights)
-    return -tf.reduce_sum(loss_values, axis=1)
-
-
 def _reduce_losses(
         values: tf.Tensor,
         reduction: Reduction) -> tf.Tensor:
@@ -88,6 +72,22 @@ class CoralOrdinalCrossEntropy(losses.Loss):
         self.importance_weights = importance_weights
         self.from_type = from_type
 
+    @staticmethod
+    def ordinal_loss(
+            logits: tf.Tensor,
+            levels: tf.Tensor,
+            importance_weights: Optional[tf.Tensor] = None) -> tf.Tensor:
+        """Compute ordinal loss without reduction."""
+        levels = tf.cast(levels, dtype=logits.dtype)
+        loss_values = (
+            tf.math.log_sigmoid(logits) * levels
+            + (tf.math.log_sigmoid(logits) - logits) * (1.0 - levels)
+        )
+        if importance_weights is not None:
+            importance_weights = tf.cast(importance_weights, dtype=loss_values.dtype)
+            loss_values = tf.multiply(loss_values, importance_weights)
+        return -tf.reduce_sum(loss_values, axis=1)
+
     # Following https://www.tensorflow.org/api_docs/python/tf/keras/losses/Loss
     def call(
             self,
@@ -109,7 +109,7 @@ class CoralOrdinalCrossEntropy(losses.Loss):
                 tf.squeeze(y_true), self.num_classes, dtype=y_pred.dtype)
 
         if from_type == "ordinal_logits":
-            loss_values = _coral_ordinal_loss_no_reduction(
+            loss_values = self.ordinal_loss(
                 y_pred, y_true, self.importance_weights
             )
         elif from_type == "probs":
