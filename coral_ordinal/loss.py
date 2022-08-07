@@ -72,6 +72,17 @@ class CoralOrdinalCrossEntropy(losses.Loss):
         self.importance_weights = importance_weights
         self.from_type = from_type
 
+    def get_config(self) -> Dict[str, Any]:
+        """Return configuration for serializing"""
+        config = {
+            "num_classes": self.num_classes,
+            "sparse": self.sparse,
+            "importance_weights": self.importance_weights,
+            "from_type": self.from_type,
+        }
+        base_config = super().get_config()
+        return {**base_config, **config}
+
     @staticmethod
     def ordinal_loss(
             logits: tf.Tensor,
@@ -124,17 +135,6 @@ class CoralOrdinalCrossEntropy(losses.Loss):
             loss_values = tf.multiply(loss_values, sample_weight)
 
         return _reduce_losses(loss_values, self.reduction)
-
-    def get_config(self) -> Dict[str, Any]:
-        """Return configuration for serializing"""
-        config = {
-            "num_classes": self.num_classes,
-            "sparse": self.sparse,
-            "importance_weights": self.importance_weights,
-            "from_type": self.from_type,
-        }
-        base_config = super().get_config()
-        return {**base_config, **config}
 
 
 @tf.keras.utils.register_keras_serializable(package="coral_ordinal")
