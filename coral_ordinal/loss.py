@@ -305,7 +305,3 @@ class OrdinalEarthMoversDistance(tf.keras.losses.Loss):
         y_pred = corn_cumprobs(y_pred, axis=-1)
         loss_values = tf.math.squared_difference(y_true, y_pred)
         return _reduce_losses(loss_values, self.reduction)
-        # reduction = self._get_reduction()
-        # if reduction == tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE:
-        #     return tf.reduce_mean(distance)
-        # return distance
