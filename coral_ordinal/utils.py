@@ -11,27 +11,20 @@ from .types import IntArray, FloatArray
 def encode_ordinal_labels_numpy(
         array: IntArray,
         num_classes: int,
-        skip_last: bool = True,
         dtype: type = np.float32) -> FloatArray:
     """Encoder ordinal data to one-hot type
 
     Example:
 
         >>> labels = np.arange(3)
-        >>> encode_ordinal_labels_numpy(labels, num_classes=3, skip_last=True)
+        >>> encode_ordinal_labels_numpy(labels, num_classes=3)
         array([[0., 0.],
                [1., 0.],
                [1., 1.]], dtype=float32)
-        >>> encode_ordinal_labels_numpy(labels, num_classes=3, skip_last=False)
-        array([[0., 0., 0.],
-               [1., 0., 0.],
-               [1., 1., 0.]], dtype=float32)
     """
     compare_to = np.arange(num_classes)
-    if skip_last:
-        compare_to = compare_to[:-1]
-    mask = array[:, None] > compare_to
-    return mask.astype(dtype)
+    mask = array[:, None] >= compare_to
+    return mask[:, 1:].astype(dtype)
 
 
 def encode_ordinal_labels(
