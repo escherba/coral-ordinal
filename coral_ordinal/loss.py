@@ -226,6 +226,7 @@ class CornOrdinalCrossEntropy(losses.Loss):
         return _reduce_losses(loss_values, self.reduction)
 
 
+@tf.keras.utils.register_keras_serializable(package="coral_ordinal")
 class OrdinalEarthMoversDistance(tf.keras.losses.Loss):
     """"Squared Earth Movers' Distance Loss
 
