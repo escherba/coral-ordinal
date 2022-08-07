@@ -7,7 +7,6 @@ from typing import Optional, Any, Dict
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.framework import dtypes
 from tensorflow.keras.losses import Reduction
 from keras import losses
 
