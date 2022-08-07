@@ -2,8 +2,10 @@
 Ordinal loss functions
 """
 # pylint: disable=too-few-public-methods
+# pylint: disable=too-many-arguments
 from typing import Optional, Any, Dict
 
+import numpy as np
 import tensorflow as tf
 from tensorflow.python.framework import dtypes
 from tensorflow.keras.losses import Reduction
@@ -17,17 +19,17 @@ from .types import FloatArray
 def _coral_ordinal_loss_no_reduction(
         logits: tf.Tensor,
         levels: tf.Tensor,
-        importance: tf.Tensor) -> tf.Tensor:
+        importance_weights: Optional[tf.Tensor] = None) -> tf.Tensor:
     """Compute ordinal loss without reduction."""
     levels = tf.cast(levels, dtype=logits.dtype)
-    importance = tf.cast(importance, dtype=logits.dtype)
-    return -tf.reduce_sum(
-        (
-            tf.math.log_sigmoid(logits) * levels
-            + (tf.math.log_sigmoid(logits) - logits) * (1.0 - levels)
-        ) * importance,
-        axis=1,
+    loss_values = (
+        tf.math.log_sigmoid(logits) * levels
+        + (tf.math.log_sigmoid(logits) - logits) * (1.0 - levels)
     )
+    if importance_weights is not None:
+        importance_weights = tf.cast(importance_weights, dtype=loss_values.dtype)
+        loss_values = tf.multiply(loss_values, importance_weights)
+    return -tf.reduce_sum(loss_values, axis=1)
 
 
 def _reduce_losses(
@@ -96,7 +98,6 @@ class CoralOrdinalCrossEntropy(losses.Loss):
         """Forward pass"""
 
         from_type = self.from_type
-        importance_weights = self.importance_weights
         y_pred = tf.convert_to_tensor(y_pred)
 
         if self.num_classes is None:
@@ -108,14 +109,9 @@ class CoralOrdinalCrossEntropy(losses.Loss):
             y_true = encode_ordinal_labels(
                 tf.squeeze(y_true), self.num_classes, dtype=y_pred.dtype)
 
-        if importance_weights is None:
-            importance_weights = tf.ones(self.num_classes - 1, dtype=tf.float32)
-        else:
-            importance_weights = tf.cast(importance_weights, dtype=tf.float32)
-
         if from_type == "ordinal_logits":
             loss_values = _coral_ordinal_loss_no_reduction(
-                y_pred, y_true, importance_weights
+                y_pred, y_true, self.importance_weights
             )
         elif from_type == "probs":
             raise NotImplementedError("not yet implemented")
@@ -151,17 +147,19 @@ class CornOrdinalCrossEntropy(losses.Loss):
 
     num_classes: Optional[int]
     sparse: bool
+    importance_weights: Optional[FloatArray]
 
     def __init__(
             self,
             num_classes: Optional[int] = None,
             sparse: bool = True,
+            importance_weights: Optional[FloatArray] = None,
             **kwargs: Any) -> None:
         """Initializes class."""
         super().__init__(**kwargs)
-
         self.num_classes = num_classes
         self.sparse = sparse
+        self.importance_weights = importance_weights
 
     def get_config(self) -> Dict[str, Any]:
         """Return configuration for serializing"""
@@ -203,7 +201,13 @@ class CornOrdinalCrossEntropy(losses.Loss):
         n_examples = tf.shape(y_pred)[0]
         loss_values = tf.zeros(n_examples)
         set_mask = tf.cast(tf.ones(n_examples), tf.bool)
-        for task_index, label_gt_i in enumerate(sets):
+
+        importance_weights = self.importance_weights
+        if importance_weights is None:
+            importance_weights = np.ones(self.num_classes - 1)
+
+        assert len(importance_weights) == len(sets)
+        for task_index, (label_gt_i, weight) in enumerate(zip(sets, importance_weights)):
 
             pred_task = tf.gather(y_pred, task_index, axis=1)
             losses_task = tf.where(
@@ -215,7 +219,7 @@ class CornOrdinalCrossEntropy(losses.Loss):
                 ),
                 0.0,  # don't add to loss if label is <= i - 1
             )
-            loss_values -= losses_task
+            loss_values -= (losses_task * weight)
             set_mask = label_gt_i
         loss_values /= self.num_classes
 
@@ -296,7 +300,11 @@ class OrdinalEarthMoversDistance(tf.keras.losses.Loss):
         base_config = super().get_config()
         return {**base_config, **config}
 
-    def call(self, y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
+    def call(
+            self,
+            y_true: tf.Tensor,
+            y_pred: tf.Tensor,
+            sample_weight: Optional[tf.Tensor] = None) -> tf.Tensor:
         """forward pass"""
         y_pred = tf.convert_to_tensor(y_pred)
         y_true = tf.cast(y_true, y_pred.dtype)
@@ -305,10 +313,6 @@ class OrdinalEarthMoversDistance(tf.keras.losses.Loss):
             self.num_classes = int(y_pred.get_shape().as_list()[1]) + 1
 
         importance_weights = self.importance_weights
-        if importance_weights is None:
-            importance_weights = tf.ones(self.num_classes - 1, dtype=tf.float32)
-        else:
-            importance_weights = tf.cast(importance_weights, dtype=tf.float32)
 
         if self.num_classes is None:
             self.num_classes = int(y_pred.get_shape().as_list()[1]) + 1
@@ -317,5 +321,14 @@ class OrdinalEarthMoversDistance(tf.keras.losses.Loss):
             y_true = encode_ordinal_labels(y_true, num_classes=self.num_classes)
 
         y_pred = corn_cumprobs(y_pred, axis=-1)
-        loss_values = tf.math.squared_difference(y_true, y_pred) * importance_weights
+        loss_values = tf.math.squared_difference(y_true, y_pred)
+
+        if sample_weight is not None:
+            sample_weight = tf.cast(sample_weight, loss_values.dtype)
+            loss_values = tf.multiply(loss_values, sample_weight)
+
+        if importance_weights is not None:
+            importance_weights = tf.cast(importance_weights, dtype=loss_values.dtype)
+            loss_values = tf.multiply(loss_values, importance_weights)
+
         return _reduce_losses(loss_values, self.reduction)
