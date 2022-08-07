@@ -159,8 +159,6 @@ class CornOrdinalCrossEntropy(losses.Loss):
         """Initializes class."""
         super().__init__(**kwargs)
 
-        if not sparse:
-            raise NotImplementedError("dense true values not supported")
         self.num_classes = num_classes
         self.sparse = sparse
 
@@ -190,18 +188,20 @@ class CornOrdinalCrossEntropy(losses.Loss):
         """
         y_pred = tf.convert_to_tensor(y_pred, dtype=tf.float32)
         y_true = tf.cast(y_true, y_pred.dtype)
-        y_true = tf.squeeze(y_true)
         if self.num_classes is None:
             self.num_classes = int(y_pred.get_shape().as_list()[1]) + 1
 
-        sets = []
-        for i in range(self.num_classes - 1):
-            set_mask = y_true > i - 1
-            label_gt_i = y_true > i
-            sets.append((set_mask, label_gt_i))
+        if self.sparse:
+            tmp = tf.squeeze(y_true)
+            sets = [(tmp > i) for i in range(self.num_classes - 1)]
+        else:
+            tmp = tf.cast(y_true, tf.bool)
+            sets = [tmp[:, i] for i in range(self.num_classes - 1)]
 
-        loss_values = tf.zeros_like(y_true)
-        for task_index, (set_mask, label_gt_i) in enumerate(sets):
+        n_examples = tf.shape(y_pred)[0]
+        loss_values = tf.zeros(n_examples)
+        set_mask = tf.cast(tf.ones(n_examples), tf.bool)
+        for task_index, label_gt_i in enumerate(sets):
 
             pred_task = tf.gather(y_pred, task_index, axis=1)
             losses_task = tf.where(
@@ -214,6 +214,7 @@ class CornOrdinalCrossEntropy(losses.Loss):
                 0.0,  # don't add to loss if label is <= i - 1
             )
             loss_values -= losses_task
+            set_mask = label_gt_i
         loss_values /= self.num_classes
 
         if sample_weight is not None:

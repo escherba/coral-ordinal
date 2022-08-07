@@ -40,6 +40,14 @@ def test_sparse_coral_loss_mismatch() -> None:
     tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
 
 
+def test_dense_corn_loss_mismatch() -> None:
+    """basic dense correctness test"""
+    loss = CornOrdinalCrossEntropy(sparse=False)
+    val = loss(tf.constant([[1., 1.]]), tf.constant([[-1, 1.]]))
+    expect = tf.constant(0.54217446)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
 def test_sparse_corn_loss_mismatch() -> None:
     """basic sparse correctness test"""
     loss = CornOrdinalCrossEntropy(sparse=True)
@@ -61,6 +69,14 @@ def test_sparse_coral_loss_match() -> None:
     loss = CoralOrdinalCrossEntropy(sparse=True)
     val = loss(tf.constant([[2.]]), tf.constant([[1, 1.]]))
     expect = tf.constant(0.62652344)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+def test_dense_corn_loss_match() -> None:
+    """basic dense correctness test"""
+    loss = CornOrdinalCrossEntropy(sparse=False)
+    val = loss(tf.constant([[1., 1.]]), tf.constant([[1, 1.]]))
+    expect = tf.constant(0.20884115)
     tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
 
 
