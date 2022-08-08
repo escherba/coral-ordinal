@@ -7,7 +7,11 @@ import tensorflow as tf
 from keras import models, layers
 
 from coral_ordinal.layer import CornOrdinal, CoralOrdinal
-from coral_ordinal.loss import CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy
+from coral_ordinal.loss import (
+    CoralOrdinalCrossEntropy,
+    CornOrdinalCrossEntropy,
+    OrdinalSquaredEarthMoversDistance,
+)
 from coral_ordinal.types import IntArray, FloatArray
 from coral_ordinal.utils import encode_ordinal_labels_numpy
 
@@ -56,6 +60,22 @@ def test_sparse_corn_loss_mismatch() -> None:
     tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
 
 
+def test_dense_emd2_loss_mismatch() -> None:
+    """basic dense correctness test"""
+    loss = OrdinalSquaredEarthMoversDistance(sparse=False)
+    val = loss(tf.constant([[1., 1.]]), tf.constant([[-1, 1.]]))
+    expect = tf.constant(0.5899395)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+def test_sparse_emd2_loss_mismatch() -> None:
+    """basic sparse correctness test"""
+    loss = OrdinalSquaredEarthMoversDistance(sparse=True)
+    val = loss(tf.constant([[2.]]), tf.constant([[-1, 1.]]))
+    expect = tf.constant(0.5899395)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
 def test_dense_coral_loss_match() -> None:
     """basic dense correctness test"""
     loss = CoralOrdinalCrossEntropy(sparse=False)
@@ -88,9 +108,25 @@ def test_sparse_corn_loss_match() -> None:
     tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
 
 
+def test_dense_emd2_loss_match() -> None:
+    """basic dense correctness test"""
+    loss = OrdinalSquaredEarthMoversDistance(sparse=False)
+    val = loss(tf.constant([[1., 1.]]), tf.constant([[1, 1.]]))
+    expect = tf.constant(0.1445347)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
+def test_sparse_emd2_loss_match() -> None:
+    """basic sparse correctness test"""
+    loss = OrdinalSquaredEarthMoversDistance(sparse=True)
+    val = loss(tf.constant([[2.]]), tf.constant([[1, 1.]]))
+    expect = tf.constant(0.1445347)
+    tf.debugging.assert_near(val, expect, rtol=1e-5, atol=1e-5)
+
+
 @pytest.mark.parametrize(
     "klass",
-    [CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy],
+    [CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy, OrdinalSquaredEarthMoversDistance],
 )
 def test_sparse_order_invariance(klass: type) -> None:
     """test order invariance (equal after shuffling)"""
@@ -110,7 +146,7 @@ def test_sparse_order_invariance(klass: type) -> None:
 
 @pytest.mark.parametrize(
     "klass",
-    [CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy],
+    [CoralOrdinalCrossEntropy, CornOrdinalCrossEntropy, OrdinalSquaredEarthMoversDistance],
 )
 def test_sparse_inequality(klass: type) -> None:
     """test expected inequality (equal or worse after shuffling)"""
