@@ -267,7 +267,7 @@ class OrdinalSquaredEarthMoversDistance(tf.keras.losses.Loss):
             sparse: bool = True,
             importance_weights: Optional[FloatArray] = None,
             from_type: str = "ordinal_logits",
-            name: str = "ordinal_earth_movers_distance",
+            name: str = "ordinal_squared_earth_movers_distance",
             **kwargs: Any) -> None:
         """Squared Earth Movers' Distance Loss
         Args:
